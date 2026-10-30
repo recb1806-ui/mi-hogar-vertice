@@ -3196,9 +3196,13 @@ window.addEventListener('appinstalled', () => {
 });
 
 function getCleanInstallUrl() {
-  const url = new URL(window.location.href);
-  url.hash = '';
-  return url.toString();
+  try {
+    const url = new URL(window.location.href);
+    url.hash = '';
+    return url.toString();
+  } catch (e) {
+    return window.location.href;
+  }
 }
 
 async function installAppOnDevice() {
@@ -3223,58 +3227,44 @@ async function installAppOnDevice() {
 
 function shareInstallerWhatsApp() {
   const installUrl = getCleanInstallUrl();
-  const msg = `📲 *INSTALADOR APP: COMPRAS Y HOGAR (VÉRTICE)*
-` +
-              `━━━━━━━━━━━━━━━━━━━━
-` +
-              `Hola, te comparto el enlace directo para instalar la aplicación *Compras y Hogar v7.0* en tu celular o computadora:
-
-` +
-              `👉 ${installUrl}
-
-` +
-              `*¿Cómo instalarla al abrir el enlace?*
-` +
-              `• *En Android/PC:* Abre el menú lateral izquierdo (*MENÚ* ❯ *4. Instalar y Compartir App*) y toca *"Instalar en este Equipo"*.
-` +
-              `• *En iPhone (Safari):* Toca el botón *Compartir* (⬆️) y elige *"Agregar a inicio"*.
-` +
-              `━━━━━━━━━━━━━━━━━━━━
-` +
-              `_Diseñado por Vértice • RCB_`;
+  const msg = "📲 *INSTALADOR APP: COMPRAS Y HOGAR (VÉRTICE)*\n" +
+              "━━━━━━━━━━━━━━━━━━━━\n" +
+              "Hola, te comparto el enlace directo para instalar la aplicación *Compras y Hogar v7.0* en tu celular o computadora:\n\n" +
+              "👉 " + installUrl + "\n\n" +
+              "*¿Cómo instalarla al abrir el enlace?*\n" +
+              "• *En Android/PC:* Abre el menú lateral izquierdo (*MENÚ* ❯ *4. Instalar y Compartir App*) y toca *\"Instalar en este Equipo\"*.\n" +
+              "• *En iPhone (Safari):* Toca el botón *Compartir* (⬆️) y elige *\"Agregar a inicio\"*.\n" +
+              "━━━━━━━━━━━━━━━━━━━━\n" +
+              "_Diseñado por Vértice • RCB_";
   window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank");
 }
 
 async function shareOrCopyInstallLink() {
   const installUrl = getCleanInstallUrl();
   const shareData = {
-    title: 'Compras y Hogar v7.0 — Vértice',
-    text: 'Abre este enlace para usar e instalar la app Compras y Hogar (Vértice • RCB) en tu celular o equipo:',
+    title: "Compras y Hogar v7.0 — Vértice",
+    text: "Abre este enlace para usar e instalar la app Compras y Hogar (Vértice • RCB) en tu celular o equipo:",
     url: installUrl
   };
 
-  if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-    try {
+  try {
+    if (navigator.share && (!navigator.canShare || navigator.canShare(shareData))) {
       await navigator.share(shareData);
       return;
-    } catch (err) {
-      if (err.name === 'AbortError') return;
     }
+  } catch (err) {
+    if (err && err.name === "AbortError") return;
   }
 
   try {
     await navigator.clipboard.writeText(installUrl);
-    const btnTxt = document.getElementById('btn-copy-link-txt');
+    const btnTxt = document.getElementById("btn-copy-link-txt");
     if (btnTxt) {
       const prev = btnTxt.textContent;
-      btnTxt.textContent = '✓ ¡Enlace Copiado!';
+      btnTxt.textContent = "✓ ¡Enlace Copiado!";
       setTimeout(() => { btnTxt.textContent = prev; }, 2500);
     }
-    alert("¡Enlace de instalación copiado al portapapeles!
-
-" + installUrl + "
-
-Ya puedes pegarlo y enviarlo para que otra persona lo instale.");
+    alert("¡Enlace de instalación copiado al portapapeles!\n\n" + installUrl + "\n\nYa puedes pegarlo y enviarlo para que otra persona lo instale.");
   } catch (e) {
     prompt("Copia este enlace para compartir el instalador de la aplicación:", installUrl);
   }

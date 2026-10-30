@@ -1,0 +1,3288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#F59E0B" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Mi Hogar" />
+  <title>Compras y Hogar v7.0 — Vértice</title>
+<link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icono-192.png" />
+  <!-- Google Fonts: Nunito & Plus Jakarta Sans (600, 700, 800, 900) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --amber-main: #F59E0B;
+      --amber-bright: #FBBF24;
+      --amber-soft: #FEF3C7;
+      --amber-pale: #FFFBEB;
+      --amber-dark: #78350F;
+      --slate-dark: #1E293B;
+      --slate-deep: #0F172A;
+      --slate-muted: #475569;
+      --bg-ivory: #FDFBF7;
+      --card: #FFFFFF;
+      --emerald: #059669;
+      --emerald-bright: #10B981;
+      --emerald-soft: #D1FAE5;
+      --sky: #0284C7;
+      --sky-soft: #E0F2FE;
+      --rose: #E11D48;
+      --rose-soft: #FFE4E6;
+      --whatsapp: #16A34A;
+      --border: #E2E8F0;
+      --border-warm: #FDE68A;
+      --font-friendly: 'Nunito', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-friendly); -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg-ivory); color: var(--slate-dark); padding-bottom: 85px; font-size: 16px; line-height: 1.44; overflow-x: hidden; font-weight: 700; }
+    input, select, button, textarea { font-family: var(--font-friendly); }
+
+    .ico-svg { width: 19px; height: 19px; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; fill: none; flex-shrink: 0; }
+    .ico-sm { width: 16px; height: 16px; }
+
+    /* =========================================================================
+       BARRA LATERAL FLOTANTE ÚNICA CON SUBMENÚS DESPLEGABLES
+       ========================================================================= */
+    .sidebar-overlay {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(2px);
+      z-index: 900; opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+    }
+    .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
+
+    .sidebar-drawer {
+      position: fixed; top: 0; left: 0; bottom: 0; width: 305px; max-width: 85vw;
+      background: var(--slate-dark); color: #FFFFFF; z-index: 1000;
+      transform: translateX(-100%); transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex; flex-direction: column; justify-content: space-between;
+      box-shadow: 6px 0 28px rgba(0, 0, 0, 0.45); border-right: 2px solid var(--amber-bright);
+      overflow-y: auto; padding: 16px 14px 20px;
+    }
+    .sidebar-drawer.open { transform: translateX(0); }
+
+    .left-edge-handle {
+      position: fixed; left: 0; top: 48%; transform: translateY(-50%);
+      z-index: 950; background: var(--slate-dark); color: var(--amber-bright);
+      border: 2px solid var(--amber-bright); border-left: none;
+      border-radius: 0 14px 14px 0; padding: 12px 7px; cursor: pointer;
+      box-shadow: 3px 4px 14px rgba(15, 23, 42, 0.35);
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      font-weight: 900; font-size: 0.68rem; letter-spacing: 0.4px; transition: left 0.28s ease, background 0.2s;
+    }
+    .left-edge-handle .arr { font-size: 1.2rem; line-height: 1; }
+    .left-edge-handle.shifted { left: min(305px, 85vw); background: var(--amber-main); color: var(--slate-dark); border-color: #FFFFFF; }
+
+    .sb-brand { display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; border-bottom: 1px solid #334155; margin-bottom: 10px; }
+    .sb-brand h2 { font-size: 1.05rem; font-weight: 900; color: var(--amber-bright); display: flex; align-items: center; gap: 8px; }
+    .sb-close { background: #334155; color: #F8FAFC; border: none; width: 32px; height: 32px; border-radius: 10px; font-size: 1rem; font-weight: 900; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+
+    .submenu-group { margin-bottom: 8px; border-radius: 12px; overflow: hidden; border: 1px solid #334155; background: rgba(15, 23, 42, 0.45); }
+    .submenu-header {
+      width: 100%; background: #334155; color: var(--amber-bright); border: none;
+      padding: 11px 12px; font-size: 0.82rem; font-weight: 900; text-transform: uppercase;
+      letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;
+    }
+    .submenu-body { display: none; padding: 8px; flex-direction: column; gap: 5px; }
+    .submenu-body.open { display: flex; }
+
+    .sb-btn {
+      width: 100%; text-align: left; padding: 10px 11px; border-radius: 10px;
+      border: 1px solid transparent; background: transparent; color: #E2E8F0;
+      font-size: 0.9rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.15s;
+    }
+    .sb-btn:hover { background: rgba(251, 191, 36, 0.12); color: var(--amber-bright); }
+    .sb-btn.active { background: var(--amber-main); color: var(--slate-dark); font-weight: 900; box-shadow: 0 3px 10px rgba(245, 158, 11, 0.35); }
+    .sb-btn.danger-opt { color: #FDA4AF; }
+    .sb-btn.danger-opt:hover { background: rgba(225, 29, 72, 0.2); }
+
+    .sb-field-lbl { font-size: 0.72rem; color: #94A3B8; font-weight: 800; margin: 4px 4px 2px; }
+    .sb-select { width: 100%; padding: 8px 10px; border-radius: 8px; background: #1E293B; color: #FFFFFF; border: 1px solid var(--amber-bright); font-weight: 800; font-size: 0.86rem; margin-bottom: 4px; }
+
+    /* CRÉDITO VÉRTICE + YOUTUBE + SIGLAS SUTILES "RCB" */
+    .vertice-credit-card { margin-top: 14px; background: #0F172A; border: 1px solid #334155; border-radius: 13px; padding: 11px 12px; position: relative; }
+    .vertice-credit-card .v-tag { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.8px; color: #64748B; font-weight: 800; }
+    .vertice-credit-card .v-title { font-size: 0.92rem; font-weight: 900; color: var(--amber-bright); margin-top: 2px; display: flex; align-items: center; gap: 6px; }
+    .vertice-yt-link {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      margin-top: 8px; padding: 7px 10px; border-radius: 8px;
+      background: #DC2626; color: #FFFFFF; text-decoration: none;
+      font-size: 0.76rem; font-weight: 800; border: 1px solid #F87171;
+    }
+    .vertice-sub-note { font-size: 0.66rem; color: #64748B; margin-top: 7px; display: flex; justify-content: space-between; align-items: center; }
+    .rcb-watermark { font-size: 0.58rem; color: rgba(148, 163, 184, 0.2); font-weight: 800; letter-spacing: 1.5px; user-select: none; }
+
+    /* CAJA DE INSTALACIÓN Y COMPARTIR EN EL MENÚ DESPLEGABLE LATERAL */
+    .sb-install-btn {
+      background: linear-gradient(135deg, var(--amber-bright) 0%, var(--amber-main) 100%) !important;
+      color: var(--slate-deep) !important;
+      font-weight: 900 !important;
+      border: 1px solid #FEF3C7 !important;
+      box-shadow: 0 3px 10px rgba(245, 158, 11, 0.28);
+    }
+    .sb-install-btn:hover { transform: translateY(-1px); filter: brightness(1.03); }
+    .sb-wa-share-btn {
+      background: rgba(22, 163, 74, 0.18) !important;
+      color: #86EFAC !important;
+      border: 1px solid rgba(34, 197, 94, 0.45) !important;
+      font-weight: 800 !important;
+    }
+    .sb-wa-share-btn:hover { background: var(--whatsapp) !important; color: #FFFFFF !important; }
+    .sb-link-share-btn {
+      background: rgba(2, 132, 199, 0.18) !important;
+      color: #7DD3FC !important;
+      border: 1px solid rgba(56, 189, 248, 0.4) !important;
+      font-weight: 800 !important;
+    }
+    .sb-link-share-btn:hover { background: var(--sky) !important; color: #FFFFFF !important; }
+
+    /* CRÉDITOS MUY DISCRETOS AL FINAL DE LOS 4 BOTONES EN PANTALLA PRINCIPAL */
+    .home-discreet-credits {
+      max-width: 780px;
+      margin: 22px auto 2px;
+      text-align: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #94A3B8;
+      letter-spacing: 0.3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      flex-wrap: wrap;
+      opacity: 0.85;
+      user-select: none;
+    }
+    .home-discreet-credits .rcb-sigla {
+      font-size: 0.65rem;
+      font-weight: 900;
+      letter-spacing: 1.4px;
+      color: #64748B;
+      background: rgba(148, 163, 184, 0.14);
+      padding: 2px 7px;
+      border-radius: 6px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+
+    /* =========================================================================
+       CABECERA SUPERIOR LIMPIA + BOTÓN CASITA + BOTÓN CANASTA + BOTÓN WHATSAPP
+       ========================================================================= */
+    header {
+      background: linear-gradient(135deg, var(--amber-bright) 0%, var(--amber-main) 100%);
+      color: var(--slate-dark); padding: 13px 16px 13px 26px; position: sticky; top: 0; z-index: 500;
+      box-shadow: 0 3px 14px rgba(120, 53, 15, 0.14); border-bottom: 2px solid #D97706;
+    }
+    .hdr-clean { display: flex; justify-content: space-between; align-items: center; gap: 10px; max-width: 1120px; margin: 0 auto; }
+    .hdr-texts { flex: 1; min-width: 0; cursor: pointer; }
+    .hdr-texts h1 { font-size: 1.24rem; font-weight: 900; color: var(--slate-deep); letter-spacing: -0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hdr-texts p { font-size: 0.83rem; color: #451A03; font-weight: 800; margin-top: 2px; }
+
+    .hdr-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+    .home-icon-only-btn,
+    .cart-icon-only-btn,
+    .wa-icon-only-btn {
+      width: 42px; height: 42px; min-width: 42px; border-radius: 12px;
+      border: 2px solid #FFFFFF;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .home-icon-only-btn {
+      background: #FFFBEB; color: var(--amber-dark);
+      box-shadow: 0 3px 10px rgba(120, 53, 15, 0.22);
+    }
+    .home-icon-only-btn.active-home {
+      background: var(--slate-deep); color: var(--amber-bright);
+    }
+    .cart-icon-only-btn {
+      background: var(--slate-deep); color: var(--amber-bright);
+      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.3);
+    }
+    .cart-icon-only-btn.active-cart {
+      background: #0F766E; color: #FFFFFF;
+    }
+    .wa-icon-only-btn {
+      background: var(--whatsapp); color: #FFFFFF;
+      box-shadow: 0 3px 10px rgba(22, 163, 74, 0.35);
+    }
+    .home-icon-only-btn:hover,
+    .cart-icon-only-btn:hover,
+    .wa-icon-only-btn:hover { transform: scale(1.06); }
+    .home-icon-only-btn svg,
+    .cart-icon-only-btn svg { width: 21px; height: 21px; stroke: currentColor; stroke-width: 2.3; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .wa-icon-only-btn svg { width: 22px; height: 22px; fill: currentColor; stroke: none; }
+
+    /* CONTENEDOR PRINCIPAL */
+    .main-container { max-width: 1120px; margin: 0 auto; padding: 14px 14px 45px 24px; }
+    .view-section { display: none; }
+    .view-section.active { display: block; }
+
+    /* =========================================================================
+       NUEVA VENTANA PRINCIPAL DE INICIO LIMPIA (#view-home) CON 4 BOTONES 2x2
+       ========================================================================= */
+    .home-welcome-box { text-align: center; margin: 6px auto 18px; max-width: 680px; }
+    .home-welcome-box h2 { font-size: 1.38rem; font-weight: 900; color: var(--slate-deep); letter-spacing: -0.3px; }
+    .home-welcome-box p { font-size: 0.92rem; color: var(--slate-muted); font-weight: 700; margin-top: 4px; }
+    .home-grid-2x2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; max-width: 780px; margin: 0 auto; }
+    @media (max-width: 520px) { .home-grid-2x2 { grid-template-columns: 1fr; gap: 14px; } }
+    .home-hero-card {
+      background: #FFFFFF; border-radius: 24px; padding: 24px 18px;
+      border: 2.5px solid var(--border); box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+      display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px;
+      cursor: pointer; transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
+      user-select: none;
+    }
+    .home-hero-card:hover, .home-hero-card:active { transform: translateY(-4px) scale(1.015); box-shadow: 0 14px 30px rgba(15, 23, 42, 0.12); }
+    .home-hero-icon {
+      width: 84px; height: 84px; border-radius: 24px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+    }
+    .home-hero-icon svg { width: 46px; height: 46px; }
+    .home-hero-card.card-plan { background: linear-gradient(180deg, #FFFBEB 0%, #FFFFFF 100%); border-color: #FCD34D; }
+    .home-hero-card.card-plan .home-hero-icon { background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%); color: #78350F; }
+    .home-hero-card.card-buy { background: linear-gradient(180deg, #ECFDF5 0%, #FFFFFF 100%); border-color: #6EE7B7; }
+    .home-hero-card.card-buy .home-hero-icon { background: linear-gradient(135deg, #34D399 0%, #059669 100%); color: #FFFFFF; }
+    .home-hero-card.card-money { background: linear-gradient(180deg, #F0F9FF 0%, #FFFFFF 100%); border-color: #7DD3FC; }
+    .home-hero-card.card-money .home-hero-icon { background: linear-gradient(135deg, #38BDF8 0%, #0284C7 100%); color: #FFFFFF; }
+    .home-hero-card.card-ant { background: linear-gradient(180deg, #FFF1F2 0%, #FFFFFF 100%); border-color: #FDA4AF; }
+    .home-hero-card.card-ant .home-hero-icon { background: linear-gradient(135deg, #FB7185 0%, #E11D48 100%); color: #FFFFFF; }
+    .home-hero-title { font-size: 1.22rem; font-weight: 900; color: var(--slate-deep); line-height: 1.2; }
+    .home-hero-sub { font-size: 0.88rem; font-weight: 700; color: var(--slate-muted); line-height: 1.3; }
+
+    /* BARRA DE ACCESO RÁPIDO A CALCULADORA (SOLO ÍCONO COMPACTO A LA DERECHA) */
+    .calc-quick-strip {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+      color: #FFFFFF; padding: 10px 14px; border-radius: 15px; margin-bottom: 12px;
+      border: 1.5px solid #334155; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+    }
+    .calc-quick-strip .cqs-info { display: flex; align-items: center; gap: 9px; font-size: 0.86rem; font-weight: 800; color: #E2E8F0; }
+    .calc-trigger-pill {
+      background: var(--amber-main); color: var(--slate-deep); border: 2px solid var(--amber-soft);
+      width: 42px; height: 42px; min-width: 42px; padding: 0; border-radius: 12px;
+      display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+      box-shadow: 0 3px 10px rgba(245, 158, 11, 0.35); transition: transform 0.15s ease; flex-shrink: 0;
+    }
+    .calc-trigger-pill:hover { transform: scale(1.06); }
+    .calc-trigger-pill svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 2.3; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* BOTÓN FLOTANTE DE CALCULADORA (SOLO ÍCONO, SIN TEXTO) */
+    .floating-calc-fab {
+      position: fixed; right: 16px; bottom: 18px; z-index: 850;
+      background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+      color: var(--amber-bright); border: 2.5px solid var(--amber-bright);
+      width: 54px; height: 54px; border-radius: 50%; padding: 0;
+      display: none; align-items: center; justify-content: center; cursor: pointer;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.45); transition: transform 0.18s ease;
+    }
+    .floating-calc-fab.visible { display: inline-flex; }
+    .floating-calc-fab:hover { transform: scale(1.06); }
+
+    /* CUADROS DE RESUMEN EN LENGUAJE AMIGABLE */
+    .kpi-grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); gap: 10px; margin-bottom: 14px; }
+    .kpi-card { background: var(--card); border-radius: 16px; padding: 13px 11px; text-align: center; border: 1.5px solid var(--border); box-shadow: 0 3px 8px rgba(15, 23, 42, 0.04); }
+    .kpi-card .k-lbl { font-size: 0.73rem; font-weight: 800; text-transform: uppercase; color: var(--slate-muted); }
+    .kpi-card .k-val { font-size: 1.32rem; font-weight: 900; margin-top: 4px; color: var(--slate-deep); }
+    .kpi-card .k-sub { font-size: 0.75rem; font-weight: 700; color: var(--slate-muted); margin-top: 3px; }
+    .kpi-card.warm { background: var(--amber-soft); border-color: var(--amber-main); }
+    .kpi-card.warm .k-lbl, .kpi-card.warm .k-val { color: var(--amber-dark); }
+    .kpi-card.sky { background: var(--sky-soft); border-color: #38BDF8; }
+    .kpi-card.sky .k-lbl, .kpi-card.sky .k-val { color: var(--sky); }
+    .kpi-card.emerald { background: var(--emerald-soft); border-color: #34D399; }
+    .kpi-card.emerald .k-lbl, .kpi-card.emerald .k-val { color: var(--emerald); }
+    .kpi-card.rose { background: var(--rose-soft); border-color: #FDA4AF; }
+    .kpi-card.rose .k-lbl, .kpi-card.rose .k-val { color: var(--rose); }
+
+    /* PANELES BLANCOS LIMPIOS */
+    .panel-box { background: var(--card); border-radius: 18px; padding: 16px; margin-bottom: 16px; border: 1.5px solid var(--border); box-shadow: 0 3px 10px rgba(15, 23, 42, 0.03); }
+    .panel-hdr { margin-bottom: 12px; }
+    .panel-hdr h2 { font-size: 1.1rem; font-weight: 900; color: var(--slate-deep); display: flex; align-items: center; gap: 8px; }
+    .panel-hdr p { font-size: 0.85rem; color: var(--slate-muted); margin-top: 2px; }
+
+    /* GRÁFICO CIRCULAR INTERACTIVO (DONUT CHART) */
+    .donut-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(255px, 1fr)); gap: 18px; align-items: center; }
+    .donut-svg-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .donut-svg { width: 245px; height: 245px; overflow: visible; }
+    .donut-slice { cursor: pointer; transition: transform 0.2s ease; transform-origin: 0 0; }
+    .donut-slice:hover, .donut-slice.active-slice { transform: scale(1.045); }
+    .donut-legend { display: flex; flex-direction: column; gap: 8px; }
+    .legend-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--bg-ivory); cursor: pointer; transition: 0.15s; }
+    .legend-item:hover, .legend-item.active-leg { border-color: var(--amber-main); background: var(--amber-pale); transform: translateX(3px); }
+    .leg-left { display: flex; align-items: center; gap: 10px; }
+    .leg-dot { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
+    .leg-name { font-weight: 800; font-size: 0.92rem; color: var(--slate-deep); }
+    .leg-sub { font-size: 0.76rem; color: var(--slate-muted); font-weight: 600; }
+    .leg-right { text-align: right; }
+    .leg-val { font-weight: 900; font-size: 0.95rem; color: var(--slate-deep); }
+    .leg-pct { font-size: 0.78rem; font-weight: 800; color: #B45309; }
+
+    /* TARJETAS DE CATEGORÍAS EN EL RESUMEN */
+    .sheets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+    .sheet-card { background: var(--bg-ivory); border: 1.5px solid var(--border); border-radius: 14px; padding: 13px; cursor: pointer; transition: 0.15s; display: flex; flex-direction: column; gap: 6px; }
+    .sheet-card:hover { border-color: var(--amber-main); background: var(--amber-pale); transform: translateY(-2px); }
+    .sheet-card .sh-top { display: flex; justify-content: space-between; align-items: center; font-weight: 900; font-size: 0.95rem; color: var(--slate-deep); }
+    .sheet-card .sh-amounts { display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 800; color: var(--slate-muted); }
+    .p-bar-bg { width: 100%; height: 8px; background: #E2E8F0; border-radius: 99px; overflow: hidden; }
+    .p-bar-fill { height: 100%; background: var(--amber-main); border-radius: 99px; }
+
+    /* FILTROS SENCILLOS EN COMPRAS */
+    .filters-panel { background: var(--amber-pale); border: 1.5px solid var(--border-warm); border-radius: 16px; padding: 11px; margin-bottom: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+    .f-group { background: #FFFFFF; padding: 6px 10px; border-radius: 10px; border: 1px solid #FCD34D; }
+    .f-group label { display: block; font-size: 0.68rem; text-transform: uppercase; color: #92400E; font-weight: 800; margin-bottom: 2px; }
+    .f-group select { width: 100%; background: transparent; color: var(--slate-deep); border: none; font-size: 0.92rem; font-weight: 800; outline: none; }
+
+    /* PÍLDORAS DE SEMANA / SALIDA */
+    .outings-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; scrollbar-width: none; }
+    .outings-strip::-webkit-scrollbar { display: none; }
+    .outing-pill { padding: 8px 14px; border-radius: 999px; border: 1.5px solid var(--border); background: #FFFFFF; color: var(--slate-dark); font-size: 0.88rem; font-weight: 800; white-space: nowrap; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+    .outing-pill.active { background: var(--slate-dark); color: var(--amber-bright); border-color: var(--slate-dark); box-shadow: 0 3px 10px rgba(15, 23, 42, 0.2); }
+    .outing-pill .cnt { background: rgba(15, 23, 42, 0.08); padding: 2px 7px; border-radius: 99px; font-size: 0.74rem; }
+    .outing-pill.active .cnt { background: rgba(251, 191, 36, 0.25); color: #FFFFFF; }
+
+    /* TARJETAS DE PRODUCTO EN COMPRAS */
+    .rubro-block { margin-bottom: 16px; }
+    .rubro-banner { background: var(--amber-soft); color: var(--amber-dark); padding: 9px 13px; border-radius: 11px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 9px; border-left: 5px solid var(--amber-main); font-weight: 800; font-size: 0.88rem; }
+    .item-card { background: var(--card); border-radius: 15px; padding: 14px; margin-bottom: 10px; border: 1.5px solid var(--border); transition: 0.15s; }
+    .item-card.checked { border-color: #34D399; border-left: 6px solid var(--emerald-bright); background: #F8FAFC; }
+    .ic-top { display: flex; align-items: flex-start; gap: 11px; }
+    .chk-btn { width: 32px; height: 32px; min-width: 32px; border-radius: 9px; border: 2.2px solid #64748B; background: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; font-weight: 900; color: #FFFFFF; cursor: pointer; margin-top: 2px; }
+    .chk-btn.checked { background: var(--emerald-bright); border-color: var(--emerald); }
+    .ic-body { flex: 1; }
+    .ic-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 3px; }
+    .tag-num { background: var(--slate-dark); color: var(--amber-bright); font-size: 0.74rem; font-weight: 800; padding: 2px 7px; border-radius: 5px; }
+    .tag-hoja { background: var(--amber-soft); color: var(--amber-dark); font-size: 0.74rem; font-weight: 800; padding: 2px 7px; border-radius: 5px; }
+    .ic-title { font-size: 1.06rem; font-weight: 800; color: var(--slate-deep); }
+    .ic-sug { font-size: 0.86rem; color: var(--slate-muted); font-style: italic; margin-top: 2px; }
+    .btn-edit-sm { background: var(--bg-ivory); border: 1px solid var(--border); color: var(--slate-dark); padding: 5px 9px; border-radius: 8px; font-size: 0.78rem; font-weight: 800; cursor: pointer; }
+
+    .ic-bottom { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #CBD5E1; }
+    .ic-specs { display: flex; flex-wrap: wrap; gap: 6px; font-size: 0.84rem; font-weight: 700; }
+    .ic-specs span { background: #F1F5F9; padding: 4px 9px; border-radius: 7px; }
+    .ic-specs .sp-techo { background: var(--amber-soft); color: var(--amber-dark); border: 1px solid #FCD34D; font-weight: 900; }
+
+    .ic-inputs { display: flex; align-items: center; gap: 7px; }
+    .real-box { display: flex; align-items: center; background: #FFFBEB; border: 2px solid var(--amber-main); border-radius: 9px; padding: 4px 8px; width: 150px; }
+    .real-box span { font-weight: 900; color: #B45309; margin-right: 4px; font-size: 0.9rem; }
+    .real-box input { width: 100%; border: none; background: transparent; font-size: 1.02rem; font-weight: 900; color: var(--slate-deep); outline: none; }
+    .mini-calc-inline-btn { background: #FEF3C7; border: 1px solid #F59E0B; color: #92400E; width: 28px; height: 28px; min-width: 28px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; padding: 0; margin-left: 2px; }
+    .diff-pill { padding: 6px 10px; border-radius: 8px; font-size: 0.82rem; font-weight: 900; min-width: 108px; text-align: center; }
+    .diff-pill.pos { background: var(--emerald-soft); color: var(--emerald); border: 1px solid #6EE7B7; }
+    .diff-pill.neg { background: var(--rose-soft); color: var(--rose); border: 1px solid #FDA4AF; }
+    .diff-pill.neu { background: #F1F5F9; color: #64748B; }
+
+    /* ÚNICO BOTÓN CIRCULAR GRANDE (+) EN "PLANEAR MIS COMPRAS" Y EN "GASTOS HORMIGA" */
+    .big-plus-hero { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 14px; text-align: center; margin-bottom: 14px; }
+    .big-circle-add-btn {
+      width: 78px; height: 78px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--amber-bright) 0%, var(--amber-main) 100%);
+      color: var(--slate-deep); border: 4px solid var(--amber-soft);
+      box-shadow: 0 8px 22px rgba(245, 158, 11, 0.4);
+      font-size: 2.8rem; font-weight: 700; line-height: 1;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .big-circle-add-btn:hover { transform: scale(1.07); box-shadow: 0 10px 28px rgba(245, 158, 11, 0.55); }
+    .big-plus-hero p { font-size: 0.92rem; font-weight: 800; color: var(--amber-dark); margin-top: 10px; }
+
+    /* TABLAS Y BOTONES */
+    .table-wrap { overflow-x: auto; }
+    table.m-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    table.m-table th { background: var(--slate-dark); color: var(--amber-bright); padding: 10px 8px; text-align: left; font-size: 0.78rem; text-transform: uppercase; }
+    table.m-table td { padding: 10px 8px; border-bottom: 1px solid var(--border); font-weight: 700; }
+    table.m-table tr:nth-child(even) td { background: var(--bg-ivory); }
+
+    .btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .btn { padding: 10px 14px; border-radius: 12px; border: none; font-size: 0.88rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-amber { background: var(--amber-main); color: var(--slate-deep); }
+    .btn-emerald { background: var(--emerald-bright); color: #FFFFFF; }
+    .btn-rose { background: var(--rose); color: #FFFFFF; }
+    .btn-slate { background: #E2E8F0; color: var(--slate-deep); }
+
+    /* MODALES FLOTANTES GENERALES */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.68); backdrop-filter: blur(4px); z-index: 1200; display: none; align-items: center; justify-content: center; padding: 12px; }
+    .modal-backdrop.open { display: flex; }
+    .modal-card { background: #FFFFFF; border-radius: 24px; width: 100%; max-width: 560px; max-height: 92vh; overflow-y: auto; padding: 20px; box-shadow: 0 18px 44px rgba(0,0,0,0.4); border: 2px solid var(--amber-main); }
+    .modal-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+    .modal-hdr h3 { font-size: 1.12rem; font-weight: 900; color: var(--slate-deep); }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+    .fg label { display: block; font-size: 0.78rem; font-weight: 800; color: var(--slate-muted); margin-bottom: 4px; }
+    .fg input, .fg select { width: 100%; padding: 10px 12px; border-radius: 11px; border: 1.5px solid #94A3B8; font-size: 0.95rem; font-weight: 700; color: var(--slate-deep); }
+
+    /* =========================================================================
+       REDISEÑO DEL MODAL (+) ESTILO APP FINANCIERA (#modal-item)
+       ========================================================================= */
+    .fin-modal-card { background: #FDFBF7; border-radius: 26px; width: 100%; max-width: 530px; max-height: 94vh; overflow-y: auto; padding: 0; box-shadow: 0 22px 50px rgba(15, 23, 42, 0.5); border: 2px solid var(--amber-main); }
+    .fin-hdr { background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); color: #FFFFFF; padding: 15px 18px; display: flex; align-items: center; justify-content: space-between; gap: 10px; position: sticky; top: 0; z-index: 15; border-bottom: 2px solid var(--amber-main); }
+    .fin-hdr-left { display: flex; align-items: center; gap: 11px; }
+    .fin-back-btn { background: rgba(255, 255, 255, 0.12); color: #FFFFFF; border: 1px solid rgba(255, 255, 255, 0.25); width: 36px; height: 36px; border-radius: 11px; font-size: 1.15rem; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .fin-title { font-size: 1.08rem; font-weight: 900; color: #FFFFFF; letter-spacing: -0.2px; }
+    .fin-order-badge { background: var(--amber-main); color: var(--slate-deep); font-size: 0.82rem; font-weight: 900; padding: 5px 12px; border-radius: 999px; border: 2px solid #FEF3C7; white-space: nowrap; user-select: none; }
+    .fin-body { padding: 16px 18px 20px; display: flex; flex-direction: column; gap: 16px; }
+
+    /* BLOQUE SUPERIOR PROTAGONISTA (MONTO HERO + FILA COMPACTA DE CÁLCULO) */
+    .fin-hero-amount-box { background: linear-gradient(145deg, #132A1F 0%, #0F172A 100%); color: #FFFFFF; border-radius: 20px; padding: 16px 16px 14px; box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18); border: 1.5px solid #10B981; }
+    .fin-hero-lbl { text-align: center; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.9px; color: #A7F3D0; font-weight: 800; margin-bottom: 6px; }
+    .fin-hero-row1 { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 14px; }
+    .fin-hero-input-wrap { display: flex; align-items: baseline; border-bottom: 2.5px solid #10B981; padding-bottom: 4px; max-width: 210px; }
+    .fin-hero-input-wrap input { width: 100%; background: transparent; border: none; color: #FFFFFF; font-size: 2.1rem; font-weight: 900; text-align: center; outline: none; }
+    .fin-hero-input-wrap input::placeholder { color: rgba(255, 255, 255, 0.35); }
+    .fin-pen-tag { font-size: 1.15rem; font-weight: 900; color: #34D399; letter-spacing: 0.5px; }
+    .fin-calc-icon-btn { background: rgba(16, 185, 129, 0.2); border: 1.5px solid #34D399; color: #A7F3D0; width: 42px; height: 42px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.15s ease, background 0.15s; }
+    .fin-calc-icon-btn:hover { transform: scale(1.06); background: rgba(16, 185, 129, 0.35); }
+
+    .fin-hero-row2 { display: grid; grid-template-columns: 1.2fr 1fr 1.1fr; gap: 8px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.14); }
+    @media (max-width: 460px) {
+      .fin-hero-row2 { grid-template-columns: 1fr 1fr; }
+      .fin-hero-row2 .fin-sub-col.full-sm { grid-column: 1 / -1; }
+    }
+    .fin-sub-col { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 7px 9px; }
+    .fin-sub-col label { display: block; font-size: 0.66rem; text-transform: uppercase; color: #CBD5E1; font-weight: 800; margin-bottom: 3px; }
+    .fin-sub-col input { width: 100%; background: transparent; border: none; color: #FFFFFF; font-size: 0.94rem; font-weight: 900; outline: none; }
+    .fin-qty-stepper { display: flex; align-items: center; justify-content: space-between; gap: 4px; }
+    .fin-qty-btn { width: 26px; height: 26px; border-radius: 7px; border: none; background: var(--amber-main); color: var(--slate-deep); font-size: 1rem; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; }
+    .fin-qty-stepper input { text-align: center; width: 44px; }
+    .fin-pres-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+    .fin-pres-chip { font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 6px; background: rgba(255, 255, 255, 0.13); color: #E2E8F0; border: none; cursor: pointer; }
+    .fin-pres-chip:hover { background: var(--amber-main); color: var(--slate-deep); }
+
+    /* CUADRÍCULA DE CATEGORÍAS CON ÍCONOS CIRCULARES GRANDES (4 POR FILA) */
+    .fin-sec-label { font-size: 0.8rem; font-weight: 900; color: var(--slate-muted); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .fin-cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px 8px; text-align: center; }
+    .fin-cat-item { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; user-select: none; padding: 4px 2px; border-radius: 14px; transition: transform 0.15s ease; }
+    .fin-cat-item:hover { transform: translateY(-2px); }
+    .fin-cat-circle { width: 58px; height: 58px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.65rem; color: #FFFFFF; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15); border: 3px solid transparent; transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; }
+    .fin-cat-item.selected .fin-cat-circle { border-color: var(--slate-deep); transform: scale(1.08); box-shadow: 0 0 0 3px var(--amber-bright), 0 6px 16px rgba(15, 23, 42, 0.28); }
+    .fin-cat-name { font-size: 0.78rem; font-weight: 800; color: var(--slate-deep); line-height: 1.15; max-width: 78px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .fin-cat-item.selected .fin-cat-name { color: #B45309; font-weight: 900; }
+
+    /* PANEL CREADOR DE NUEVA CATEGORÍA PERSONALIZADA (+ MÁS) */
+    .fin-new-cat-box { display: none; margin-top: 10px; background: var(--amber-pale); border: 1.5px dashed var(--amber-main); border-radius: 14px; padding: 12px; }
+    .fin-new-cat-box.open { display: block; }
+    .fin-emoji-picker { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 10px; }
+    .fin-emoji-btn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--border); background: #FFFFFF; font-size: 1.15rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .fin-emoji-btn.active { border-color: var(--slate-deep); background: var(--amber-soft); transform: scale(1.1); }
+
+    /* PÍLDORAS TÁCTILES DE GRUPO / RUBRO Y FRECUENCIA */
+    .fin-chips-wrap { display: flex; flex-wrap: wrap; gap: 7px; }
+    .fin-chip { padding: 8px 13px; border-radius: 999px; border: 1.5px solid #CBD5E1; background: #FFFFFF; color: var(--slate-dark); font-size: 0.83rem; font-weight: 800; cursor: pointer; transition: 0.15s ease; display: inline-flex; align-items: center; gap: 5px; }
+    .fin-chip:hover { border-color: var(--amber-main); background: var(--amber-pale); }
+    .fin-chip.active { background: #10B981; color: #FFFFFF; border-color: #059669; box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3); }
+    .fin-chip.add-new-chip { border-style: dashed; border-color: #059669; color: #059669; background: #ECFDF5; }
+    .fin-frec-chip { flex: 1 1 calc(33.33% - 7px); justify-content: center; text-align: center; padding: 9px 10px; border-radius: 12px; border: 1.5px solid #CBD5E1; background: #FFFFFF; color: var(--slate-dark); font-size: 0.84rem; font-weight: 800; cursor: pointer; transition: 0.15s; }
+    .fin-frec-chip.active { background: var(--slate-deep); color: var(--amber-bright); border-color: var(--slate-deep); box-shadow: 0 3px 10px rgba(15, 23, 42, 0.22); }
+    .fin-clean-input { width: 100%; padding: 11px 14px; border-radius: 13px; border: 1.5px solid #CBD5E1; background: #FFFFFF; font-size: 0.96rem; font-weight: 800; color: var(--slate-deep); outline: none; transition: border-color 0.15s; }
+    .fin-clean-input:focus { border-color: var(--amber-main); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.18); }
+
+    /* =========================================================================
+       CALCULADORA SIMPLE A PANTALLA COMPLETA (#fullscreen-calc)
+       ========================================================================= */
+    .fullscreen-calc-overlay { position: fixed; inset: 0; z-index: 2000; background: #0F172A; color: #FFFFFF; display: none; flex-direction: column; justify-content: space-between; }
+    .fullscreen-calc-overlay.open { display: flex; }
+    .fcalc-top-bar { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: #1E293B; border-bottom: 2px solid var(--amber-main); }
+    .fcalc-back-btn { background: #334155; color: #FFFFFF; border: 1px solid #64748B; padding: 8px 14px; border-radius: 11px; font-size: 0.9rem; font-weight: 900; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+    .fcalc-title { font-size: 1.02rem; font-weight: 900; color: var(--amber-bright); display: flex; align-items: center; gap: 6px; }
+    .fcalc-close-x { background: rgba(225, 29, 72, 0.2); color: #FDA4AF; border: 1px solid #F43F5E; width: 36px; height: 36px; border-radius: 10px; font-size: 1rem; font-weight: 900; cursor: pointer; }
+    .fcalc-display-area { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; padding: 20px 22px; background: radial-gradient(circle at top right, #1E293B 0%, #0F172A 100%); overflow: hidden; max-width: 540px; width: 100%; margin: 0 auto; }
+    .fcalc-target-badge { align-self: flex-start; background: rgba(16, 185, 129, 0.16); color: #6EE7B7; border: 1px solid rgba(52, 211, 153, 0.4); padding: 4px 11px; border-radius: 999px; font-size: 0.76rem; font-weight: 800; margin-bottom: auto; }
+    .fcalc-history-expr { font-size: 1.25rem; color: #94A3B8; font-weight: 700; word-break: break-all; text-align: right; min-height: 32px; margin-bottom: 6px; }
+    .fcalc-main-result { font-size: 2.9rem; font-weight: 900; color: #FFFFFF; letter-spacing: -0.5px; word-break: break-all; text-align: right; line-height: 1.1; }
+    .fcalc-main-result span.curr { font-size: 1.4rem; color: var(--amber-bright); margin-right: 6px; }
+    .fcalc-use-bar { max-width: 540px; width: 100%; margin: 0 auto; padding: 0 16px 10px; }
+    .fcalc-use-btn { width: 100%; padding: 14px; border-radius: 15px; border: none; background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: #FFFFFF; font-size: 1.02rem; font-weight: 900; cursor: pointer; box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35); display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .fcalc-keypad { max-width: 540px; width: 100%; margin: 0 auto; padding: 12px 16px 24px; background: #1E293B; border-radius: 26px 26px 0 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.35); }
+    .fcalc-key { height: 62px; border-radius: 16px; border: none; background: #334155; color: #F8FAFC; font-size: 1.45rem; font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.08s ease, background 0.12s; user-select: none; }
+    .fcalc-key:active { transform: scale(0.95); background: #475569; }
+    .fcalc-key.op { background: rgba(245, 158, 11, 0.18); color: var(--amber-bright); border: 1px solid rgba(251, 191, 36, 0.3); }
+    .fcalc-key.fn { background: #475569; color: #FCA5A5; font-size: 1.2rem; }
+    .fcalc-key.eq { background: var(--amber-main); color: var(--slate-deep); font-size: 1.65rem; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35); }
+
+    /* VISTA IMPRIMIBLE OFICIAL */
+    .print-box { background: #FFFFFF; padding: 14px; border-radius: 12px; border: 1px solid var(--border); overflow-x: auto; }
+    .p-banner { background: #1B365D; color: #FFFFFF; border-radius: 10px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; }
+    .p-badge { background: #15803D; border: 2px solid #86EFAC; border-radius: 8px; padding: 8px 14px; text-align: center; min-width: 180px; }
+    table.p-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    table.p-table th { background: #1E40AF; color: #FFFFFF; padding: 8px 6px; border: 1px solid #94A3B8; font-weight: 800; }
+    table.p-table td { padding: 7px 6px; border: 1px solid #94A3B8; }
+    table.p-table td.p-techo { background: #DCFCE7 !important; color: #14532D; font-weight: 900; text-align: center; }
+    table.p-table td.p-real { background: #FEF3C7 !important; text-align: center; }
+    .write-box { border: 1.5px solid #334155; background: #FFFFFF; border-radius: 4px; padding: 3px 7px; font-weight: 800; display: inline-block; min-width: 100px; text-align: left; }
+
+    @media print {
+      header, .left-edge-handle, .sidebar-drawer, .sidebar-overlay, .floating-calc-fab, .fullscreen-calc-overlay, .no-print { display: none !important; }
+      body { background: #FFFFFF; padding: 0; }
+      .main-container { max-width: 100%; padding: 0; }
+      .view-section { display: none !important; }
+      #view-imprimir { display: block !important; }
+      .print-box { border: none; padding: 0; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- OVERLAY Y ÚNICO BOTÓN FLOTANTE LATERAL IZQUIERDO (FLECHA) -->
+<div class="sidebar-overlay" id="sb-overlay" onclick="toggleSidebar(false)"></div>
+
+<button class="left-edge-handle" id="left-handle" onclick="toggleSidebar()" title="Abrir / Cerrar Menú">
+  <span class="arr" id="handle-arrow">❯</span>
+  <span>MENÚ</span>
+</button>
+
+<!-- BOTÓN FLOTANTE DE CALCULADORA (SOLO ÍCONO, SIN TEXTO) -->
+<button class="floating-calc-fab" id="floating-calc-btn" onclick="openCalculator(null, 'Apoyo en Compras')" title="Abrir Calculadora">
+  <svg class="ico-svg" style="width:24px;height:24px;" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8.01" y2="10"/><line x1="12" y1="10" x2="12.01" y2="10"/><line x1="16" y1="10" x2="16.01" y2="10"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="12" y1="14" x2="12.01" y2="14"/><line x1="16" y1="14" x2="16.01" y2="14"/><line x1="8" y1="18" x2="8.01" y2="18"/><line x1="12" y1="18" x2="16" y2="18"/></svg>
+</button>
+
+<!-- BARRA FLOTANTE LATERAL CON SUBMENÚS CONSOLIDADOS Y FIRMA VÉRTICE (RCB) -->
+<aside class="sidebar-drawer" id="sb-drawer">
+  <div>
+    <div class="sb-brand">
+      <h2>
+        <svg class="ico-svg" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Compras y Hogar
+      </h2>
+      <button class="sb-close" onclick="toggleSidebar(false)">✕</button>
+    </div>
+
+    <!-- SUBMENÚ 1: PANTALLAS DE MI HOGAR CON NOMBRES UNIFORMES -->
+    <div class="submenu-group">
+      <button class="submenu-header" onclick="toggleSubmenu('sub-vistas')">
+        <span>1. Pantallas de mi Hogar</span>
+        <span id="arr-sub-vistas">▼</span>
+      </button>
+      <div class="submenu-body open" id="sub-vistas">
+        <button class="sb-btn active" id="nav-home" onclick="navigateTo('home')">
+          <svg class="ico-svg" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Inicio (Pantalla Principal)
+        </button>
+        <button class="sb-btn" id="nav-configurar" onclick="navigateTo('configurar')">
+          <svg class="ico-svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Planear mis Compras
+        </button>
+        <button class="sb-btn" id="nav-registrar" onclick="navigateTo('registrar')">
+          <svg class="ico-svg" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          Comprar y Pagar
+        </button>
+        <button class="sb-btn" id="nav-dashboard" onclick="navigateTo('dashboard')">
+          <svg class="ico-svg" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+          Cómo va mi Plata
+        </button>
+        <button class="sb-btn" id="nav-hormiga" onclick="navigateTo('hormiga')">
+          <svg class="ico-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Gastos Hormiga
+        </button>
+        <button class="sb-btn" id="nav-salidas" onclick="navigateTo('salidas')">
+          <svg class="ico-svg" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Mis Gastos por Semana
+        </button>
+        <button class="sb-btn" id="nav-imprimir" onclick="navigateTo('imprimir')">
+          <svg class="ico-svg" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Lista para Imprimir (PDF)
+        </button>
+      </div>
+    </div>
+
+    <!-- SUBMENÚ 2: AJUSTES DE MI MES -->
+    <div class="submenu-group">
+      <button class="submenu-header" onclick="toggleSubmenu('sub-ajustes')">
+        <span>2. Ajustes de mi Mes</span>
+        <span id="arr-sub-ajustes">▶</span>
+      </button>
+      <div class="submenu-body" id="sub-ajustes">
+        <div class="sb-field-lbl">Mes que estoy viendo:</div>
+        <select id="sb-mes-select" class="sb-select" onchange="syncMonthSelection(this.value)">
+          <option value="Octubre 2026">Octubre 2026</option>
+          <option value="Noviembre 2026">Noviembre 2026</option>
+          <option value="Diciembre 2026">Diciembre 2026</option>
+          <option value="Enero 2027">Enero 2027</option>
+          <option value="Febrero 2027">Febrero 2027</option>
+          <option value="Marzo 2027">Marzo 2027</option>
+        </select>
+        <button class="sb-btn" onclick="openKpiModal()">
+          <svg class="ico-svg" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/></svg>
+          Elegir qué cuadros ver y Meta
+        </button>
+        <button class="sb-btn danger-opt" onclick="openZeroModal()">
+          <svg class="ico-svg" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+          Poner Todo en Cero (S/ 0.00)
+        </button>
+        <button class="sb-btn" onclick="restoreExcel67Items()">
+          <svg class="ico-svg" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+          Restaurar Lista Original (S/ 3,809.05)
+        </button>
+      </div>
+    </div>
+
+    <!-- SUBMENÚ 3: COPIAS Y USUARIOS -->
+    <div class="submenu-group">
+      <button class="submenu-header" onclick="toggleSubmenu('sub-usuarios')">
+        <span>3. Copias y Usuarios</span>
+        <span id="arr-sub-usuarios">▶</span>
+      </button>
+      <div class="submenu-body" id="sub-usuarios">
+        <div class="sb-field-lbl">Usuario actual:</div>
+        <select id="sb-profile-select" class="sb-select" onchange="switchUserProfile(this.value)"></select>
+        <button class="sb-btn" onclick="createNewUserProfile()">
+          <svg class="ico-svg" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+          Crear Nuevo Usuario Independiente
+        </button>
+        <button class="sb-btn" onclick="exportBackupJSON()">
+          <svg class="ico-svg" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Guardar Copia en mi Celular
+        </button>
+        <button class="sb-btn" onclick="document.getElementById('file-json-in').click()">
+          <svg class="ico-svg" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Cargar Copia Guardada
+        </button>
+        <input type="file" id="file-json-in" style="display:none" accept=".json" onchange="importBackupJSON(event)" />
+      </div>
+    </div>
+
+    <!-- SUBMENÚ 4: CAJA PARA INSTALAR Y COMPARTIR APP (SOLO EN MENÚ DESPLEGABLE) -->
+    <div class="submenu-group" style="border-color: var(--amber-bright); background: rgba(15, 23, 42, 0.75);">
+      <button class="submenu-header" onclick="toggleSubmenu('sub-instalar')">
+        <span>4. Instalar y Compartir App</span>
+        <span id="arr-sub-instalar">▼</span>
+      </button>
+      <div class="submenu-body open" id="sub-instalar">
+        <div class="sb-field-lbl" id="pwa-install-status-lbl">Instalar o enviar a otro equipo:</div>
+        <button class="sb-btn sb-install-btn" id="btn-pwa-install" onclick="installAppOnDevice()">
+          <svg class="ico-svg" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/><path d="M12 6v7"/><polyline points="9 10 12 13 15 10"/></svg>
+          <span id="btn-pwa-install-txt">Instalar en este Equipo</span>
+        </button>
+        <button class="sb-btn sb-wa-share-btn" onclick="shareInstallerWhatsApp()">
+          <svg class="ico-svg" viewBox="0 0 24 24" style="fill:currentColor; stroke:none;"><path d="M12.031 2c-5.516 0-9.999 4.483-9.999 9.999 0 1.765.461 3.485 1.336 5.002L2 22l5.132-1.346a9.957 9.957 0 0 0 4.899 1.289h.004c5.515 0 9.998-4.483 9.998-9.999 0-2.672-1.04-5.184-2.929-7.073A9.936 9.936 0 0 0 12.031 2zm5.828 14.12c-.246.693-1.432 1.326-1.985 1.41-.508.076-1.15.109-1.857-.116-.429-.136-.979-.318-1.682-.622-2.957-1.277-4.888-4.262-5.036-4.46-.148-.197-1.203-1.601-1.203-3.054 0-1.453.761-2.167 1.032-2.463.271-.296.591-.37.788-.37.197 0 .394.002.567.01.182.009.426-.069.665.508.246.591.838 2.045.912 2.193.074.148.123.32.025.517-.099.197-.148.32-.296.493-.148.172-.311.385-.444.517-.148.148-.302.309-.13.604.172.296.766 1.264 1.645 2.047 1.13 1.008 2.083 1.32 2.379 1.468.296.148.468.123.641-.074.172-.197.739-.862.936-1.158.197-.296.394-.246.665-.148.271.099 1.725.813 2.02.961.296.148.493.222.567.345.074.123.074.714-.172 1.407z"/></svg>
+          Compartir Instalador por WhatsApp
+        </button>
+        <button class="sb-btn sb-link-share-btn" onclick="shareOrCopyInstallLink()">
+          <svg class="ico-svg" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          <span id="btn-copy-link-txt">Compartir Enlace para Instalar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FIRMA DE AUTORÍA: DISEÑADO POR VÉRTICE + YOUTUBE + SIGLAS SUTILES "RCB" -->
+  <div class="vertice-credit-card">
+    <div class="v-tag">Arquitectura & Desarrollo</div>
+    <div class="v-title">
+      <svg class="ico-svg ico-sm" style="color:var(--amber-bright);" viewBox="0 0 24 24"><polygon points="12 2 2 22 12 17 22 22 12 2"/></svg>
+      Diseñado por Vértice
+    </div>
+    <a href="https://www.youtube.com/@vertice_estrategia" target="_blank" rel="noopener noreferrer" class="vertice-yt-link">
+      <svg class="ico-svg ico-sm" viewBox="0 0 24 24" style="fill:currentColor; stroke:none;"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+      youtube.com/@vertice_estrategia
+    </a>
+    <div class="vertice-sub-note">
+      <span>Datos privados en tu equipo</span>
+      <span class="rcb-watermark">RCB</span>
+    </div>
+  </div>
+</aside>
+
+<!-- CABECERA SUPERIOR LIMPIA: TÍTULO (LLEVA A INICIO) + BOTÓN CASITA + BOTÓN CANASTA + WHATSAPP -->
+<header>
+  <div class="hdr-clean">
+    <div class="hdr-texts" onclick="navigateTo('home')" title="Volver a Inicio (Pantalla Principal)">
+      <h1 id="hdr-view-title">Inicio</h1>
+      <p id="hdr-context-sub">Octubre 2026 • Presupuesto del Mes: S/ 3,809.05</p>
+    </div>
+    <div class="hdr-actions">
+      <!-- BOTÓN RÁPIDO DE CASITA / INICIO -->
+      <button class="home-icon-only-btn active-home" id="top-home-square-btn" onclick="navigateTo('home')" title="Ir a Inicio (Pantalla Principal)">
+        <svg viewBox="0 0 24 24">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </button>
+      <!-- BOTÓN CUADRADO DE CANASTA/CARRITO DE COMPRAS -->
+      <button class="cart-icon-only-btn" id="top-cart-square-btn" onclick="navigateTo('registrar')" title="Ir directo a Comprar y Pagar">
+        <svg viewBox="0 0 24 24">
+          <circle cx="9" cy="21" r="1.5"/>
+          <circle cx="19" cy="21" r="1.5"/>
+          <path d="M1.5 2h3l2.6 12.6a2 2 0 0 0 2 1.6h9.6a2 2 0 0 0 2-1.6L22.5 6H6"/>
+        </svg>
+      </button>
+      <!-- BOTÓN CHICO CUADRADO CON EL ÍCONO DE WHATSAPP -->
+      <button class="wa-icon-only-btn" id="top-wa-square-btn" onclick="shareCurrentContextWhatsApp()" title="Enviar reporte por WhatsApp">
+        <svg viewBox="0 0 24 24"><path d="M12.031 2c-5.516 0-9.999 4.483-9.999 9.999 0 1.765.461 3.485 1.336 5.002L2 22l5.132-1.346a9.957 9.957 0 0 0 4.899 1.289h.004c5.515 0 9.998-4.483 9.998-9.999 0-2.672-1.04-5.184-2.929-7.073A9.936 9.936 0 0 0 12.031 2zm5.828 14.12c-.246.693-1.432 1.326-1.985 1.41-.508.076-1.15.109-1.857-.116-.429-.136-.979-.318-1.682-.622-2.957-1.277-4.888-4.262-5.036-4.46-.148-.197-1.203-1.601-1.203-3.054 0-1.453.761-2.167 1.032-2.463.271-.296.591-.37.788-.37.197 0 .394.002.567.01.182.009.426-.069.665.508.246.591.838 2.045.912 2.193.074.148.123.32.025.517-.099.197-.148.32-.296.493-.148.172-.311.385-.444.517-.148.148-.302.309-.13.604.172.296.766 1.264 1.645 2.047 1.13 1.008 2.083 1.32 2.379 1.468.296.148.468.123.641-.074.172-.197.739-.862.936-1.158.197-.296.394-.246.665-.148.271.099 1.725.813 2.02.961.296.148.493.222.567.345.074.123.074.714-.172 1.407z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="main-container">
+
+  <!-- =====================================================================================
+       VISTA 0 (NUEVA VENTANA PRINCIPAL DE INICIO): 4 BOTONES GRANDES DE ALTO IMPACTO
+       ===================================================================================== -->
+  <section id="view-home" class="view-section active">
+    <div class="home-welcome-box">
+      <h2>¿Qué deseas hacer hoy en tu hogar?</h2>
+      <p>Toca una de las 4 opciones principales para empezar</p>
+    </div>
+
+    <div class="home-grid-2x2">
+      <!-- BOTÓN 1: PLANEAR MIS COMPRAS -->
+      <div class="home-hero-card card-plan" onclick="navigateTo('configurar')">
+        <div class="home-hero-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+            <rect x="9" y="3" width="6" height="4" rx="1"/>
+            <path d="M9 12h6"/>
+            <path d="M9 16h4"/>
+            <path d="M16.5 14.5l2.5-2.5 2 2-2.5 2.5-2.5.5.5-2.5z"/>
+          </svg>
+        </div>
+        <div class="home-hero-title">Planear mis Compras</div>
+        <div class="home-hero-sub">Armar mi lista y presupuesto</div>
+      </div>
+
+      <!-- BOTÓN 2: COMPRAR Y PAGAR -->
+      <div class="home-hero-card card-buy" onclick="navigateTo('registrar')">
+        <div class="home-hero-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="21" r="1.5"/>
+            <circle cx="19" cy="21" r="1.5"/>
+            <path d="M1.5 2h3l2.6 12.6a2 2 0 0 0 2 1.6h9.6a2 2 0 0 0 2-1.6L22.5 6H6"/>
+            <polyline points="10 10 12 12 16 8"/>
+          </svg>
+        </div>
+        <div class="home-hero-title">Comprar y Pagar</div>
+        <div class="home-hero-sub">Marcar mercado y recibos</div>
+      </div>
+
+      <!-- BOTÓN 3: CÓMO VA MI PLATA -->
+      <div class="home-hero-card card-money" onclick="navigateTo('dashboard')">
+        <div class="home-hero-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z"/>
+            <path d="M2 9v1c0 1.1.9 2 2 2h1"/>
+            <circle cx="16" cy="11" r="1"/>
+          </svg>
+        </div>
+        <div class="home-hero-title">Cómo va mi Plata</div>
+        <div class="home-hero-sub">Resumen y ahorro de mi mes</div>
+      </div>
+
+      <!-- BOTÓN 4: GASTOS HORMIGA -->
+      <div class="home-hero-card card-ant" onclick="navigateTo('hormiga')">
+        <div class="home-hero-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="8" r="4"/>
+            <path d="M9 6v4"/>
+            <path d="M7.5 7.5h3"/>
+            <circle cx="16.5" cy="15.5" r="4.5"/>
+            <path d="M16.5 13.5v4"/>
+            <path d="M15 15.5h3"/>
+            <circle cx="7" cy="17" r="2.5"/>
+          </svg>
+        </div>
+        <div class="home-hero-title">Gastos Hormiga</div>
+        <div class="home-hero-sub">Gastos no programados y antojos</div>
+      </div>
+    </div>
+
+    <!-- CRÉDITOS DISCRETOS AL FINAL DE LOS 4 BOTONES EN PANTALLA PRINCIPAL CON SIGLAS RCB -->
+    <div class="home-discreet-credits">
+      <span>Compras y Hogar v7.0 • Diseñado por Vértice</span>
+      <span>•</span>
+      <span class="rcb-sigla">RCB</span>
+    </div>
+  </section>
+
+  <!-- =====================================================================================
+       VISTA 1: CÓMO VA MI PLATA (#view-dashboard)
+       ===================================================================================== -->
+  <section id="view-dashboard" class="view-section">
+    <div class="kpi-grid-4" id="dashboard-kpi-cards"></div>
+
+    <!-- GRÁFICO CIRCULAR INTERACTIVO (DONUT CHART) POR CATEGORÍA -->
+    <div class="panel-box">
+      <div class="panel-hdr">
+        <h2>
+          <svg class="ico-svg" style="color:var(--amber-main);" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+          ¿Cómo se reparte el presupuesto de mi hogar?
+        </h2>
+        <p>Toca cualquier color del círculo o de la lista para ver sus detalles o ir a anotar compras.</p>
+      </div>
+      <div class="donut-layout" id="dash-donut-section"></div>
+    </div>
+
+    <!-- TARJETAS INTERACTIVAS DE CADA CATEGORÍA -->
+    <div class="panel-box">
+      <div class="panel-hdr">
+        <h2>
+          <svg class="ico-svg" style="color:var(--emerald);" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          Mis Categorías de Gasto (Toca una para anotar compras)
+        </h2>
+      </div>
+      <div class="sheets-grid" id="dash-sheets-grid"></div>
+    </div>
+  </section>
+
+  <!-- =====================================================================================
+       VISTA 2: COMPRAR Y PAGAR (#view-registrar — CON ÍCONO DE CALCULADORA SIN TEXTO)
+       ===================================================================================== -->
+  <section id="view-registrar" class="view-section">
+    <div class="calc-quick-strip">
+      <div class="cqs-info">
+        <span style="font-size:1.25rem;">🛒</span>
+        <span>Comprar y Pagar activo • Calcula pesos, descuentos o bolsas al instante</span>
+      </div>
+      <button class="calc-trigger-pill" onclick="openCalculator(null, 'Comprar y Pagar')" title="Abrir Calculadora">
+        <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8.01" y2="10"/><line x1="12" y1="10" x2="12.01" y2="10"/><line x1="16" y1="10" x2="16.01" y2="10"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="12" y1="14" x2="12.01" y2="14"/><line x1="16" y1="14" x2="16.01" y2="14"/><line x1="8" y1="18" x2="8.01" y2="18"/><line x1="12" y1="18" x2="16" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="filters-panel">
+      <div class="f-group">
+        <label>1. Categoría de Gasto</label>
+        <select id="f-hoja" onchange="onHojaFilterChange()"></select>
+      </div>
+      <div class="f-group">
+        <label>2. Grupo o Rubro</label>
+        <select id="f-rubro" onchange="refreshAllViews()"></select>
+      </div>
+      <div class="f-group">
+        <label>3. ¿Cada cuánto se compra?</label>
+        <select id="f-frec" onchange="onFrecFilterChange()">
+          <option value="Semanal">Semanal (Semanas 1 a 4)</option>
+          <option value="Mensual">Mensual (1 vez al mes)</option>
+          <option value="Quincenal">Quincenal (Quincenas 1 y 2)</option>
+          <option value="Diario">Diario (Por Semanas 1 a 4)</option>
+          <option value="Bimestral (Mensualizado)">Cada 2 Meses (Bimestral)</option>
+          <option value="TODAS">Ver todos juntos</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- PÍLDORAS DE SEMANA / SALIDA -->
+    <div class="outings-strip" id="registrar-outings-strip"></div>
+
+    <!-- CUADROS DE CONTROL QUE CUADRAN AL 100% EN LENGUAJE AMIGABLE -->
+    <div class="kpi-grid-4" id="registrar-kpi-cards"></div>
+
+    <!-- LISTA DE PRODUCTOS AGRUPADOS POR RUBRO -->
+    <div id="registrar-items-container"></div>
+  </section>
+
+  <!-- =====================================================================================
+       VISTA 3: MIS GASTOS POR SEMANA Y POR GRUPO (#view-salidas)
+       ===================================================================================== -->
+  <section id="view-salidas" class="view-section">
+    <div class="panel-box">
+      <div class="panel-hdr">
+        <h2>📅 Cuánto llevo gastado y ahorrado en cada salida del mes</h2>
+        <p>Toca cualquier fila para abrir esa compra.</p>
+      </div>
+      <div class="table-wrap" id="full-salidas-table"></div>
+    </div>
+
+    <div class="panel-box">
+      <div class="panel-hdr">
+        <h2>📂 Resumen separado por Grupo / Rubro</h2>
+      </div>
+      <div class="table-wrap" id="full-rubros-table"></div>
+    </div>
+  </section>
+
+  <!-- =====================================================================================
+       VISTA 4: GASTOS HORMIGA (#view-hormiga — CON ÍCONO DE CALCULADORA SIN TEXTO)
+       ===================================================================================== -->
+  <section id="view-hormiga" class="view-section">
+    <div class="calc-quick-strip">
+      <div class="cqs-info">
+        <span style="font-size:1.25rem;">🐜</span>
+        <span>Control de Gastos Hormiga • Suma tus gastos pequeños antes de anotarlos</span>
+      </div>
+      <button class="calc-trigger-pill" onclick="openCalculator(null, 'Gastos Hormiga')" title="Abrir Calculadora">
+        <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8.01" y2="10"/><line x1="12" y1="10" x2="12.01" y2="10"/><line x1="16" y1="10" x2="16.01" y2="10"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="12" y1="14" x2="12.01" y2="14"/><line x1="16" y1="14" x2="16.01" y2="14"/><line x1="8" y1="18" x2="8.01" y2="18"/><line x1="12" y1="18" x2="16" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="kpi-grid-4" id="hormiga-kpi-cards"></div>
+
+    <div class="panel-box">
+      <div class="big-plus-hero">
+        <button class="big-circle-add-btn" onclick="openHormigaModal()" title="Registrar un gasto hormiga">+</button>
+        <p>Toca el círculo (+) para anotar un gasto hormiga (se deducirá del presupuesto total)</p>
+      </div>
+
+      <div class="table-wrap" id="hormiga-history-table"></div>
+    </div>
+  </section>
+
+  <!-- =====================================================================================
+       VISTA 5: PLANEAR MIS COMPRAS (#view-configurar)
+       ===================================================================================== -->
+  <section id="view-configurar" class="view-section">
+    <div class="panel-box">
+      <div class="big-plus-hero">
+        <button class="big-circle-add-btn" onclick="openItemModal()" title="Adicionar nuevo producto o gasto">+</button>
+        <p>Toca el círculo (+) para adicionar un nuevo producto o gasto a su categoría</p>
+      </div>
+
+      <div class="table-wrap" id="config-catalog-table"></div>
+    </div>
+  </section>
+
+  <!-- =====================================================================================
+       VISTA 6: LISTA PARA IMPRIMIR / GUARDAR PDF (#view-imprimir)
+       ===================================================================================== -->
+  <section id="view-imprimir" class="view-section">
+    <div class="btn-row no-print" style="margin-bottom:14px;">
+      <button class="btn btn-amber" onclick="window.print()">🖨️ Imprimir o Guardar en PDF</button>
+      <button class="btn btn-slate" onclick="exportCurrentViewCSV()">📊 Descargar en Excel (.CSV)</button>
+    </div>
+    <div class="print-box" id="print-sheet-render"></div>
+  </section>
+
+</div>
+
+<!-- =======================================================================================
+     CALCULADORA SIMPLE A PANTALLA COMPLETA (FULL-SCREEN OVERLAY #fullscreen-calc)
+     ======================================================================================= -->
+<div class="fullscreen-calc-overlay" id="fullscreen-calc">
+  <div class="fcalc-top-bar">
+    <button class="fcalc-back-btn" onclick="closeCalculator()">
+      <span>← Volver</span>
+    </button>
+    <div class="fcalc-title">
+      <span>🖩 Calculadora de Apoyo</span>
+    </div>
+    <button class="fcalc-close-x" onclick="closeCalculator()" title="Cerrar calculadora">✕</button>
+  </div>
+
+  <div class="fcalc-display-area">
+    <div class="fcalc-target-badge" id="fcalc-context-label">Modo consulta libre</div>
+    <div class="fcalc-history-expr" id="fcalc-expr-view">0</div>
+    <div class="fcalc-main-result"><span class="curr">S/</span><span id="fcalc-res-view">0.00</span></div>
+  </div>
+
+  <div class="fcalc-use-bar" id="fcalc-use-wrap" style="display:none;">
+    <button class="fcalc-use-btn" onclick="applyCalculatorResultToField()">
+      <span>✓ Usar este monto (<span id="fcalc-btn-amount-preview">S/ 0.00</span>)</span>
+    </button>
+  </div>
+
+  <div class="fcalc-keypad">
+    <button class="fcalc-key fn" onclick="calcInput('C')">C</button>
+    <button class="fcalc-key fn" onclick="calcInput('BACK')">⌫</button>
+    <button class="fcalc-key op" onclick="calcInput('%')">%</button>
+    <button class="fcalc-key op" onclick="calcInput('/')">÷</button>
+
+    <button class="fcalc-key" onclick="calcInput('7')">7</button>
+    <button class="fcalc-key" onclick="calcInput('8')">8</button>
+    <button class="fcalc-key" onclick="calcInput('9')">9</button>
+    <button class="fcalc-key op" onclick="calcInput('*')">×</button>
+
+    <button class="fcalc-key" onclick="calcInput('4')">4</button>
+    <button class="fcalc-key" onclick="calcInput('5')">5</button>
+    <button class="fcalc-key" onclick="calcInput('6')">6</button>
+    <button class="fcalc-key op" onclick="calcInput('-')">−</button>
+
+    <button class="fcalc-key" onclick="calcInput('1')">1</button>
+    <button class="fcalc-key" onclick="calcInput('2')">2</button>
+    <button class="fcalc-key" onclick="calcInput('3')">3</button>
+    <button class="fcalc-key op" onclick="calcInput('+')">+</button>
+
+    <button class="fcalc-key" onclick="calcInput('00')">00</button>
+    <button class="fcalc-key" onclick="calcInput('0')">0</button>
+    <button class="fcalc-key" onclick="calcInput('.')">.</button>
+    <button class="fcalc-key eq" onclick="calcInput('=')">=</button>
+  </div>
+</div>
+
+<!-- =======================================================================================
+     MODAL: REGISTRAR GASTO HORMIGA (CON ÍCONO DE CALCULADORA JUNTO AL MONTO)
+     ======================================================================================= -->
+<div class="modal-backdrop" id="modal-hormiga">
+  <div class="modal-card" style="max-width: 440px;">
+    <div class="modal-hdr">
+      <h3>➕ Registrar Gasto Hormiga</h3>
+      <button class="sb-close" onclick="closeModal('modal-hormiga')">✕</button>
+    </div>
+    <p style="font-size:0.84rem; color:var(--slate-muted); margin-bottom:12px;">
+      Anote este gasto no programado. No alterará sus listas de compras habituales, pero se deducirá automáticamente de su presupuesto total del mes.
+    </p>
+    <div class="form-grid" style="grid-template-columns: 1fr;">
+      <div class="fg">
+        <label>1. ¿En qué se gastó?</label>
+        <input type="text" id="h-desc" placeholder="Ej. Café, taxi extra, helado, antojo, propina..." />
+      </div>
+      <div class="fg">
+        <label>2. Monto de lo que se gastó (S/)</label>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input type="number" step="0.10" id="h-monto" placeholder="0.00" style="flex:1;" />
+          <button type="button" class="btn btn-amber" style="padding:10px 13px; border-radius:11px;" onclick="openCalculator('h-monto', 'Monto Gasto Hormiga')" title="Calcular monto">
+            🖩
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:16px; justify-content:flex-end;">
+      <button class="btn btn-slate" onclick="closeModal('modal-hormiga')">Cancelar</button>
+      <button class="btn btn-emerald" onclick="saveHormigaExpense()">💾 Guardar y Deducir</button>
+    </div>
+  </div>
+</div>
+
+<!-- =======================================================================================
+     MODAL 1 REDISEÑADO: ADICIONAR / EDITAR PRODUCTO ESTILO APP FINANCIERA (#modal-item)
+     ======================================================================================= -->
+<div class="modal-backdrop" id="modal-item">
+  <div class="fin-modal-card">
+    <div class="fin-hdr">
+      <div class="fin-hdr-left">
+        <button type="button" class="fin-back-btn" onclick="closeModal('modal-item')" title="Volver">←</button>
+        <h3 class="fin-title" id="modal-item-title">Añadir Producto o Gasto</h3>
+      </div>
+      <span class="fin-order-badge" id="m-num-badge" title="Número de orden automático">#1</span>
+    </div>
+
+    <input type="hidden" id="m-id" value="" />
+    <input type="hidden" id="m-num" value="1" />
+    <input type="hidden" id="m-lista-select" value="Canasta Alimentación" />
+    <input type="hidden" id="m-rubro-select" value="" />
+    <input type="hidden" id="m-frec" value="Semanal" />
+
+    <div class="fin-body">
+      <div class="fin-hero-amount-box">
+        <div class="fin-hero-lbl">Precio por Unidad</div>
+        <div class="fin-hero-row1">
+          <div class="fin-hero-input-wrap">
+            <input type="number" step="0.01" id="m-punit" oninput="autoCalcModalTecho()" placeholder="0.00" />
+          </div>
+          <span class="fin-pen-tag">PEN / S/</span>
+          <button type="button" class="fin-calc-icon-btn" onclick="openCalculator('m-punit', 'Precio por Unidad')" title="Abrir Calculadora">
+            <svg class="ico-svg" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8.01" y2="10"/><line x1="12" y1="10" x2="12.01" y2="10"/><line x1="16" y1="10" x2="16.01" y2="10"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="12" y1="14" x2="12.01" y2="14"/><line x1="16" y1="14" x2="16.01" y2="14"/><line x1="8" y1="18" x2="8.01" y2="18"/><line x1="12" y1="18" x2="16" y2="18"/></svg>
+          </button>
+        </div>
+
+        <div class="fin-hero-row2">
+          <div class="fin-sub-col full-sm">
+            <label>Presentación / Unidad</label>
+            <input type="text" id="m-pres" list="pres-suggestions" placeholder="Ej. Kg, Unidad, Bolsa..." />
+            <datalist id="pres-suggestions">
+              <option value="Kg"></option>
+              <option value="Unidad"></option>
+              <option value="Bolsa"></option>
+              <option value="Pack"></option>
+              <option value="Recibo"></option>
+              <option value="Bandeja 1 kg"></option>
+              <option value="Frasco"></option>
+            </datalist>
+            <div class="fin-pres-chips">
+              <button type="button" class="fin-pres-chip" onclick="setModalPres('Kg')">Kg</button>
+              <button type="button" class="fin-pres-chip" onclick="setModalPres('Unidad')">Unidad</button>
+              <button type="button" class="fin-pres-chip" onclick="setModalPres('Bolsa')">Bolsa</button>
+              <button type="button" class="fin-pres-chip" onclick="setModalPres('Pack')">Pack</button>
+              <button type="button" class="fin-pres-chip" onclick="setModalPres('Recibo')">Recibo</button>
+            </div>
+          </div>
+
+          <div class="fin-sub-col">
+            <label>Cantidad</label>
+            <div class="fin-qty-stepper">
+              <button type="button" class="fin-qty-btn" onclick="stepModalCant(-1)">−</button>
+              <input type="number" step="1" min="1" id="m-cant" oninput="autoCalcModalTecho()" value="1" />
+              <button type="button" class="fin-qty-btn" onclick="stepModalCant(1)">+</button>
+            </div>
+          </div>
+
+          <div class="fin-sub-col" style="background:rgba(16, 185, 129, 0.18); border-color:#34D399;">
+            <label style="color:#A7F3D0; display:flex; justify-content:space-between; align-items:center;">
+              <span>Máx. Total (S/)</span>
+              <span style="cursor:pointer;" onclick="openCalculator('m-techo', 'Precio Máximo Total')" title="Calcular Tope">🖩</span>
+            </label>
+            <input type="number" step="0.01" id="m-techo" placeholder="0.00" style="color:#6EE7B7; font-size:1.06rem;" />
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="fin-sec-label">
+          <span>Categorías</span>
+          <span id="fin-selected-cat-pill" style="color:var(--emerald); font-size:0.76rem;">Canasta Alimentación</span>
+        </div>
+        <div class="fin-cat-grid" id="fin-cat-grid-container"></div>
+
+        <div class="fin-new-cat-box" id="fin-new-cat-panel">
+          <div style="font-size:0.8rem; font-weight:900; color:var(--amber-dark); margin-bottom:4px;">
+            ✨ Crear nueva categoría personalizada
+          </div>
+          <div style="font-size:0.74rem; color:var(--slate-muted);">Elige un ícono para tu categoría:</div>
+          <div class="fin-emoji-picker" id="fin-emoji-picker"></div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="m-lista-nueva" class="fin-clean-input" placeholder="Nombre (ej. Salud, Mascotas, Educación...)" style="padding:8px 11px; font-size:0.88rem;" />
+            <button type="button" class="btn btn-amber" onclick="confirmAddCustomCategory()" style="white-space:nowrap;">+ Añadir</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="fin-sec-label">
+          <span>Grupo o Rubro</span>
+        </div>
+        <div class="fin-chips-wrap" id="fin-rubro-chips-container"></div>
+        <div id="fin-new-rubro-wrap" style="display:none; margin-top:8px;">
+          <input type="text" id="m-rubro-nuevo" class="fin-clean-input" placeholder="Escribe el nombre del nuevo grupo o rubro..." />
+        </div>
+      </div>
+
+      <div>
+        <div class="fin-sec-label">
+          <span>Frecuencia de Compra</span>
+        </div>
+        <div class="fin-chips-wrap" id="fin-frec-chips-container">
+          <button type="button" class="fin-frec-chip active" data-frec="Semanal" onclick="selectModalFrec('Semanal')">Semanal</button>
+          <button type="button" class="fin-frec-chip" data-frec="Quincenal" onclick="selectModalFrec('Quincenal')">Quincenal</button>
+          <button type="button" class="fin-frec-chip" data-frec="Mensual" onclick="selectModalFrec('Mensual')">Mensual</button>
+          <button type="button" class="fin-frec-chip" data-frec="Diario" onclick="selectModalFrec('Diario')">Diario</button>
+          <button type="button" class="fin-frec-chip" data-frec="Bimestral (Mensualizado)" onclick="selectModalFrec('Bimestral (Mensualizado)')">Bimestral</button>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div>
+          <div class="fin-sec-label" style="margin-bottom:5px;"><span>Nombre del Producto o Pago</span></div>
+          <input type="text" id="m-nombre" class="fin-clean-input" placeholder="Ej. Pollo fresco, Leche, Luz, Colegio..." />
+        </div>
+        <div>
+          <div class="fin-sec-label" style="margin-bottom:5px;"><span>Opciones de reemplazo o nota (Opcional)</span></div>
+          <input type="text" id="m-sug" class="fin-clean-input" placeholder="Ej. (se puede cambiar por pechuga, pavita o pescado)" />
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-top:6px; justify-content:space-between; align-items:center;">
+        <div>
+          <button type="button" class="btn btn-rose" id="m-btn-delete" style="display:none;" onclick="deleteModalItem()">🗑️ Borrar</button>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="btn btn-slate" onclick="closeModal('modal-item')">Cancelar</button>
+          <button type="button" class="btn btn-emerald" style="padding:11px 18px; font-size:0.94rem;" onclick="saveModalItem()">💾 Guardar Producto</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 2: ELEGIR QUÉ CUADROS VER Y META MENSUAL -->
+<div class="modal-backdrop" id="modal-kpi">
+  <div class="modal-card">
+    <div class="modal-hdr">
+      <h3>🎛️ Ajustar Cuadros y Meta de mi Mes</h3>
+      <button class="sb-close" onclick="closeModal('modal-kpi')">✕</button>
+    </div>
+    <div class="form-grid" style="grid-template-columns: 1fr;">
+      <div class="fg">
+        <label>1. ¿Cómo calcular el Presupuesto Total de mi Mes?</label>
+        <select id="kpi-meta-mode" onchange="toggleCustomMetaInput()">
+          <option value="AUTO">Sumar automáticamente todos mis productos activos (S/ 3,809.05)</option>
+          <option value="CUSTOM">Escribir manualmente un monto fijo para el mes</option>
+        </select>
+      </div>
+      <div class="fg" id="custom-meta-wrap" style="display:none;">
+        <label>Monto fijo para mi mes (S/)</label>
+        <input type="number" step="0.01" id="kpi-custom-val" value="3809.05" />
+      </div>
+      <div class="fg">
+        <label>2. ¿Qué cuadros de ahorro quieres ver al ir de compras?</label>
+        <select id="kpi-diff-mode">
+          <option value="BOTH">Ver ambos: "Me queda por gastar" y "¡Mi ahorro en esta compra!"</option>
+          <option value="TOTAL_DIFF">Ver solo "Me queda por gastar" (Planeado - Gastado)</option>
+          <option value="CHECKED_DIFF">Ver solo "¡Mi ahorro en esta compra!" (En productos marcados con ✓)</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>3. Cuando marco el check (✓) en un producto vacío:</label>
+        <select id="kpi-check-behavior">
+          <option value="AUTOFILL_TECHO">Poner automáticamente su precio planeado (y poder cambiarlo)</option>
+          <option value="KEEP_EMPTY">Dejar el precio en blanco para escribirlo manualmente</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:16px; justify-content:flex-end;">
+      <button class="btn btn-slate" onclick="closeModal('modal-kpi')">Cerrar</button>
+      <button class="btn btn-amber" onclick="saveKpiSettings()">💾 Guardar Preferencias</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 4: GUÍA DE INSTALACIÓN DIRECTA EN EL EQUIPO -->
+<div class="modal-backdrop" id="modal-install-guide">
+  <div class="modal-card" style="max-width: 460px;">
+    <div class="modal-hdr">
+      <h3>📲 Instalar App en este Equipo</h3>
+      <button class="sb-close" onclick="closeModal('modal-install-guide')">✕</button>
+    </div>
+    <div style="font-size:0.88rem; color:var(--slate-dark); display:flex; flex-direction:column; gap:10px;">
+      <p id="install-guide-status-msg" style="color:var(--slate-muted); font-weight:700;">
+        Sigue el paso según tu equipo para dejar el ícono directo en tu pantalla principal:
+      </p>
+      <div style="background:var(--amber-pale); border:1px solid var(--border-warm); border-radius:12px; padding:11px;">
+        <div style="font-weight:900; color:var(--amber-dark); margin-bottom:3px;">🤖 En Android (Chrome / Edge / Samsung):</div>
+        <div style="font-size:0.82rem; color:var(--slate-muted);">Toca los <b>3 puntitos (⋮)</b> arriba a la derecha del navegador y selecciona <b>"Instalar aplicación"</b> o <b>"Agregar a la pantalla principal"</b>.</div>
+      </div>
+      <div style="background:var(--sky-soft); border:1px solid #7DD3FC; border-radius:12px; padding:11px;">
+        <div style="font-weight:900; color:var(--sky); margin-bottom:3px;">🍏 En iPhone / iPad (Safari):</div>
+        <div style="font-size:0.82rem; color:var(--slate-muted);">Toca el botón <b>Compartir (cuadrado con flecha hacia arriba ⬆️)</b> en la barra inferior y elige <b>"Agregar a inicio"</b>.</div>
+      </div>
+      <div style="background:var(--emerald-soft); border:1px solid #6EE7B7; border-radius:12px; padding:11px;">
+        <div style="font-weight:900; color:var(--emerald); margin-bottom:3px;">💻 En Computadora / Laptop (Chrome / Edge):</div>
+        <div style="font-size:0.82rem; color:var(--slate-muted);">Haz clic en el ícono de <b>Instalar (pantalla con flecha ⬇️)</b> que aparece al lado derecho de la barra de direcciones arriba.</div>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:16px; justify-content:space-between;">
+      <button class="btn btn-amber" onclick="shareOrCopyInstallLink()">🔗 Copiar Enlace</button>
+      <button class="btn btn-slate" onclick="closeModal('modal-install-guide')">Entendido</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 3: PONER TODO EN CERO (S/ 0.00) -->
+<div class="modal-backdrop" id="modal-zero">
+  <div class="modal-card">
+    <div class="modal-hdr">
+      <h3>🧹 Empezar en Cero (S/ 0.00)</h3>
+      <button class="sb-close" onclick="closeModal('modal-zero')">✕</button>
+    </div>
+    <p style="font-size:0.92rem; color:var(--slate-muted); margin-bottom:14px;">
+      Elige cómo quieres reiniciar tu lista (siempre podrás recuperar la lista original desde el menú lateral):
+    </p>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <button class="btn btn-rose" style="justify-content:center; padding:13px;" onclick="executeZeroReset('EMPTY_ALL')">
+        1️⃣ Borrar todos los productos y gastos hormiga y dejar en S/ 0.00
+      </button>
+      <button class="btn btn-amber" style="justify-content:center; padding:13px;" onclick="executeZeroReset('ZERO_PRICES')">
+        2️⃣ Conservar los nombres de los productos pero poner sus precios en S/ 0.00
+      </button>
+      <button class="btn btn-slate" style="justify-content:center; padding:13px;" onclick="executeZeroReset('CLEAR_LOGS_ONLY')">
+        3️⃣ Borrar solo las compras y gastos hormiga anotados de este mes
+      </button>
+    </div>
+    <div class="btn-row" style="margin-top:14px; justify-content:flex-end;">
+      <button class="btn btn-slate" onclick="closeModal('modal-zero')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =========================================================================================
+// BASE DE DATOS INICIAL DEL EXCEL ADJUNTO (67 PRODUCTOS Y PAGOS = S/ 3,809.05)
+// =========================================================================================
+const EXCEL_67_ITEMS = [
+  {id:"CAN-1",num:1,lista:"Canasta Alimentación",rubro:"1. Carnes y Proteínas",nombre:"Pollo entero / cortes frescos",sug:"(reemplazable por pechuga, pierna con encuentro, filete de pollo o gallina)",pres:"Kg (5 kg = 2 pollos enteros/sem)",frec:"Semanal",pUnit:7.9,cant:5,techo:39.5,active:true},
+  {id:"CAN-2",num:2,lista:"Canasta Alimentación",rubro:"1. Carnes y Proteínas",nombre:"Carne de res: Bistec / Guiso / Molida",sug:"(reemplazable por asado de tira, churrasco, lomo, cadera o hígado de res)",pres:"Paquete / Bandeja 1 kg",frec:"Quincenal",pUnit:40.0,cant:1,techo:40.0,active:true},
+  {id:"CAN-3",num:3,lista:"Canasta Alimentación",rubro:"1. Carnes y Proteínas",nombre:"Pavita en medallones / guiso",sug:"(reemplazable por chuleta de cerdo, lomo de cerdo, panceta o pollo al horno)",pres:"Bandeja 1 kg",frec:"Quincenal",pUnit:22.9,cant:1,techo:22.9,active:true},
+  {id:"CAN-4",num:4,lista:"Canasta Alimentación",rubro:"1. Carnes y Proteínas",nombre:"Pescado fresco: Bonito / Jurel / Caballa",sug:"(reemplazable por tilapia, merluza, trucha, perico o cojinova)",pres:"Kg (Entero / Filete 1 kg)",frec:"Semanal",pUnit:10.0,cant:1,techo:10.0,active:true},
+  {id:"CAN-5",num:5,lista:"Canasta Alimentación",rubro:"2. Desayuno, Lácteos y Panadería",nombre:"Leche evaporada / UHT",sug:"(reemplazable por leche fresca en bolsa, leche sin lactosa o bebida vegetal de almendras/soya)",pres:"Tripack (Pack x 3 cajas 1 L)",frec:"Mensual",pUnit:14.9,cant:5,techo:74.5,active:true},
+  {id:"CAN-6",num:6,lista:"Canasta Alimentación",rubro:"2. Desayuno, Lácteos y Panadería",nombre:"Yogurt Natural Espeso",sug:"(reemplazable por yogurt natural, con frutos del bosque, maracuyá o kéfir)",pres:"Frasco 900 g",frec:"Mensual",pUnit:18.0,cant:3,techo:54.0,active:true},
+  {id:"CAN-7",num:7,lista:"Canasta Alimentación",rubro:"2. Desayuno, Lácteos y Panadería",nombre:"Huevos pardos seleccionados",sug:"(reemplazable por huevos de corral o huevos blancos en bandeja)",pres:"Bandeja x 30 unidades",frec:"Semanal",pUnit:14.0,cant:1,techo:14.0,active:true},
+  {id:"CAN-8",num:8,lista:"Canasta Alimentación",rubro:"2. Desayuno, Lácteos y Panadería",nombre:"Pan diario",sug:"(reemplazable por pan crocante, ciabatta, integral, yema, caracol o pan de molde)",pres:"Unidad entera (compra diaria)",frec:"Diario",pUnit:0.25,cant:4,techo:1.0,active:true},
+  {id:"CAN-9",num:9,lista:"Canasta Alimentación",rubro:"2. Desayuno, Lácteos y Panadería",nombre:"Palta fresca seleccionada",sug:"(reemplazable por palta cremosa, aceituna verde o humus de garbanzo)",pres:"Malla / Paquete 500 g",frec:"Semanal",pUnit:8.0,cant:1,techo:8.0,active:true},
+  {id:"CAN-10",num:10,lista:"Canasta Alimentación",rubro:"2. Desayuno, Lácteos y Panadería",nombre:"Avena en hojuelas",sug:"(reemplazable por quinua en hojuelas, kiwicha, siete semillas, maca o maicena)",pres:"Bolsa 900 g",frec:"Semanal",pUnit:13.0,cant:1,techo:13.0,active:true},
+  {id:"CAN-11",num:11,lista:"Canasta Alimentación",rubro:"2. Desayuno, Lácteos y Panadería",nombre:"Queso fresco pasteurizado y Mantequilla",sug:"(reemplazable por queso laminado, mozzarella, ricota o queso crema)",pres:"Moldes 250 g queso + 100 g mant.",frec:"Quincenal",pUnit:9.0,cant:1,techo:9.0,active:true},
+  {id:"CAN-12",num:12,lista:"Canasta Alimentación",rubro:"2. Desayuno, Lácteos y Panadería",nombre:"Aceituna de mesa, Jamón de pavita o Mermelada",sug:"(reemplazable por jamón cocido, pechuga ahumada, paté o manjarblanco)",pres:"Paquete 200 g / Pote 250 g",frec:"Quincenal",pUnit:6.0,cant:1,techo:6.0,active:true},
+  {id:"CAN-13",num:13,lista:"Canasta Alimentación",rubro:"2. Desayuno, Lácteos y Panadería",nombre:"Azúcar rubia, Café e Infusiones",sug:"(reemplazable por panela orgánica, miel de abeja, cacao puro o té verde/manzanilla)",pres:"Bolsa 2 kg + Caja 100 sobres",frec:"Mensual",pUnit:15.0,cant:1,techo:15.0,active:true},
+  {id:"CAN-14",num:14,lista:"Canasta Alimentación",rubro:"3. Abarrotes, Granos y Aceite",nombre:"Aceite de Oliva Extra Virgen",sug:"(reemplazable por aceite de ajonjolí, aceite de palta o aceite de coco para ensaladas/cocción)",pres:"Frasco / Botella 500 ml",frec:"Mensual",pUnit:41.9,cant:1,techo:41.9,active:true},
+  {id:"CAN-15",num:15,lista:"Canasta Alimentación",rubro:"3. Abarrotes, Granos y Aceite",nombre:"Arroz Superior",sug:"(reemplazable por arroz añejo extra, arroz integral o arroz arbóreo)",pres:"Bolsa 5 kg",frec:"Mensual",pUnit:23.9,cant:1,techo:24.0,active:true},
+  {id:"CAN-16",num:16,lista:"Canasta Alimentación",rubro:"3. Abarrotes, Granos y Aceite",nombre:"Lentejas y Menestras",sug:"(reemplazable por frejol canario, garbanzo, pallar, arveja partida o frejol negro)",pres:"Bolsa 500 g",frec:"Mensual",pUnit:4.0,cant:6,techo:24.0,active:true},
+  {id:"CAN-17",num:17,lista:"Canasta Alimentación",rubro:"3. Abarrotes, Granos y Aceite",nombre:"Fideos de sémola",sug:"(reemplazable por spaghetti, tornillo, canuto, corbata, cabello de ángel o lasaña)",pres:"Paquete 500 g",frec:"Mensual",pUnit:2.6,cant:4,techo:10.4,active:true},
+  {id:"CAN-18",num:18,lista:"Canasta Alimentación",rubro:"3. Abarrotes, Granos y Aceite",nombre:"Sémola / Quinua blanca lavada",sug:"(reemplazable por trigo pelado, polenta, morón, cebada o maíz morado)",pres:"Bolsa 500 g",frec:"Mensual",pUnit:8.8,cant:1,techo:8.8,active:true},
+  {id:"CAN-19",num:19,lista:"Canasta Alimentación",rubro:"4. Tubérculos (Papa y Camote)",nombre:"Papa Blanca",sug:"(reemplazable por papa rosada o papa para freír y guisos)",pres:"Kg (Bolsa 1 kg)",frec:"Semanal",pUnit:2.3,cant:1,techo:2.3,active:true},
+  {id:"CAN-20",num:20,lista:"Canasta Alimentación",rubro:"4. Tubérculos (Papa y Camote)",nombre:"Papa Amarilla",sug:"(reemplazable por papa harinosa, papa nativa o papa cóctel)",pres:"Malla / Bolsa 500 g",frec:"Semanal",pUnit:3.5,cant:1,techo:3.5,active:true},
+  {id:"CAN-21",num:21,lista:"Canasta Alimentación",rubro:"4. Tubérculos (Papa y Camote)",nombre:"Camote Amarillo y Morado",sug:"(reemplazable por plátano para freír/sancochar o choclo tierno)",pres:"Kg (Bolsa 1 kg)",frec:"Semanal",pUnit:2.3,cant:1,techo:2.3,active:true},
+  {id:"CAN-22",num:22,lista:"Canasta Alimentación",rubro:"4. Tubérculos (Papa y Camote)",nombre:"Yuca blanca / Olluco picado",sug:"(reemplazable por oca, mashua o arracacha)",pres:"Bandeja / Bolsa 1 kg",frec:"Quincenal",pUnit:4.2,cant:1,techo:4.2,active:true},
+  {id:"CAN-23",num:23,lista:"Canasta Alimentación",rubro:"5. Verduras Diarias (Mercado)",nombre:"Tomate fresco para ensalada",sug:"(reemplazable por tomate cherry, pimiento morrón o rabanito para ensaladas)",pres:"Kg (Bolsa 1 kg)",frec:"Semanal",pUnit:8.0,cant:1,techo:8.0,active:true},
+  {id:"CAN-24",num:24,lista:"Canasta Alimentación",rubro:"5. Verduras Diarias (Mercado)",nombre:"Cebolla Roja",sug:"(reemplazable por cebolla blanca o cebollita verde para aderezos y saltados)",pres:"Kg (Bolsa 1 kg)",frec:"Semanal",pUnit:2.5,cant:1,techo:2.5,active:true},
+  {id:"CAN-25",num:25,lista:"Canasta Alimentación",rubro:"5. Verduras Diarias (Mercado)",nombre:"Limón fresco",sug:"(reemplazable por limón grande sin pepa o naranja agria para aliños)",pres:"Malla / Bolsa 1 kg",frec:"Semanal",pUnit:4.0,cant:1,techo:4.0,active:true},
+  {id:"CAN-26",num:26,lista:"Canasta Alimentación",rubro:"5. Verduras Diarias (Mercado)",nombre:"Zanahoria fresca",sug:"(reemplazable por beterraga, nabo o calabacín verde)",pres:"Malla / Bolsa 500 g",frec:"Semanal",pUnit:3.0,cant:1,techo:3.0,active:true},
+  {id:"CAN-27",num:27,lista:"Canasta Alimentación",rubro:"5. Verduras Diarias (Mercado)",nombre:"Zapallo en trozo y zapallo aromático",sug:"(reemplazable por calabacín verde, caigua o poro para sopas y cremas)",pres:"Paquete / Trozo 500 g",frec:"Semanal",pUnit:1.7,cant:1,techo:1.7,active:true},
+  {id:"CAN-28",num:28,lista:"Canasta Alimentación",rubro:"5. Verduras Diarias (Mercado)",nombre:"Choclo tierno entero / desgranado",sug:"(reemplazable por habas verdes frescas o alcachofa)",pres:"Bandeja 500 g (2 unidades)",frec:"Semanal",pUnit:5.0,cant:1,techo:5.0,active:true},
+  {id:"CAN-29",num:29,lista:"Canasta Alimentación",rubro:"5. Verduras Diarias (Mercado)",nombre:"Arveja verde fresca y Vainitas",sug:"(reemplazable por germinados frescos, espárragos o coliflor)",pres:"Bandeja / Bolsa 500 g",frec:"Semanal",pUnit:2.1,cant:1,techo:2.1,active:true},
+  {id:"CAN-30",num:30,lista:"Canasta Alimentación",rubro:"5. Verduras Diarias (Mercado)",nombre:"Lechuga, Pepinillo y Beterraga",sug:"(reemplazable por col morada/blanca, apio en bastones o rabanito)",pres:"Pack Ensalada (1 lech. + 2 pep.)",frec:"Semanal",pUnit:3.0,cant:1,techo:3.0,active:true},
+  {id:"CAN-31",num:31,lista:"Canasta Alimentación",rubro:"5. Verduras Diarias (Mercado)",nombre:"Brócoli, Espinaca y Caigua / Pimiento",sug:"(reemplazable por acelga, coliflor, berenjena o espárrago)",pres:"Pack Verduras Verdes Semanal",frec:"Semanal",pUnit:3.1,cant:1,techo:3.1,active:true},
+  {id:"CAN-32",num:32,lista:"Canasta Alimentación",rubro:"5. Verduras Diarias (Mercado)",nombre:"Atado de Hierbas Aromáticas",sug:"(reemplazable entre apio, poro, culantro, perejil, hierbabuena, huacatay o albahaca)",pres:"Atado Semanal",frec:"Semanal",pUnit:2.3,cant:1,techo:2.3,active:true},
+  {id:"CAN-33",num:33,lista:"Canasta Alimentación",rubro:"6. Condimentos y Aderezos",nombre:"Sal de cocina yodada",sug:"(reemplazable por sal rosada o sal marina de grano fino)",pres:"Bolsa 1 kg",frec:"Mensual",pUnit:2.8,cant:1,techo:2.8,active:true},
+  {id:"CAN-34",num:34,lista:"Canasta Alimentación",rubro:"6. Condimentos y Aderezos",nombre:"Ajo entero pelado / en pasta",sug:"(reemplazable por ajo en polvo o pasta de ajo asado)",pres:"Pote / Malla 200 g",frec:"Semanal",pUnit:3.0,cant:1,techo:3.0,active:true},
+  {id:"CAN-35",num:35,lista:"Canasta Alimentación",rubro:"6. Condimentos y Aderezos",nombre:"Ají Panca y Ají Amarillo",sug:"(reemplazable por ají mirasol, ají limo o rocoto fresco)",pres:"Doypack / Pote 250 g",frec:"Mensual",pUnit:3.6,cant:1,techo:3.6,active:true},
+  {id:"CAN-36",num:36,lista:"Canasta Alimentación",rubro:"6. Condimentos y Aderezos",nombre:"Kion (Jengibre) fresco",sug:"(reemplazable por cúrcuma fresca o kion en polvo)",pres:"Bandeja / Malla 250 g",frec:"Mensual",pUnit:2.5,cant:1,techo:2.5,active:true},
+  {id:"CAN-37",num:37,lista:"Canasta Alimentación",rubro:"6. Condimentos y Aderezos",nombre:"Pimienta negra, Comino y Orégano seco",sug:"(reemplazable por tomillo, romero seco o nuez moscada)",pres:"Pack Sobres (50 g c/u)",frec:"Mensual",pUnit:3.5,cant:1,techo:3.5,active:true},
+  {id:"CAN-38",num:38,lista:"Canasta Alimentación",rubro:"6. Condimentos y Aderezos",nombre:"Condimento (Palillo), Hongos, Laurel, Canela y Clavo",sug:"(reemplazable por páprika, achiote o anís estrella)",pres:"Pack Sobres Mensual",frec:"Mensual",pUnit:4.0,cant:1,techo:4.0,active:true},
+  {id:"CAN-39",num:39,lista:"Canasta Alimentación",rubro:"6. Condimentos y Aderezos",nombre:"Sillao y Vinagre tinto/blanco",sug:"(reemplazable por salsa de ostión, aceite de sésamo o vinagre de manzana)",pres:"Botella 500 ml (Pack x 2)",frec:"Mensual",pUnit:9.0,cant:1,techo:9.0,active:true},
+  {id:"CAN-40",num:40,lista:"Canasta Alimentación",rubro:"7. Frutas (Casa y Lonchera)",nombre:"Plátano de Seda / de mesa",sug:"(reemplazable por plátano bizcocho, manzano o palillo)",pres:"Mano / Malla (~1.5 kg = 10 unid.)",frec:"Semanal",pUnit:6.8,cant:1,techo:6.8,active:true},
+  {id:"CAN-41",num:41,lista:"Canasta Alimentación",rubro:"7. Frutas (Casa y Lonchera)",nombre:"Manzana roja de mesa",sug:"(reemplazable por manzana dulce, manzana verde o pera de agua)",pres:"Kg (Bolsa 1 kg)",frec:"Semanal",pUnit:5.0,cant:1,techo:5.0,active:true},
+  {id:"CAN-42",num:42,lista:"Canasta Alimentación",rubro:"7. Frutas (Casa y Lonchera)",nombre:"Mandarina sin pepa",sug:"(reemplazable por naranja de mesa sin pepa, tangelo o lima dulce)",pres:"Kg (Bolsa 1 kg)",frec:"Semanal",pUnit:5.0,cant:1,techo:5.0,active:true},
+  {id:"CAN-43",num:43,lista:"Canasta Alimentación",rubro:"7. Frutas (Casa y Lonchera)",nombre:"Granadilla Selecta",sug:"(reemplazable por tumbo, maracuyá, durazno o aguaymanto)",pres:"Malla x 6 unidades (~1 kg)",frec:"Semanal",pUnit:5.0,cant:1,techo:5.0,active:true},
+  {id:"CAN-44",num:44,lista:"Canasta Alimentación",rubro:"7. Frutas (Casa y Lonchera)",nombre:"Papaya o Piña dulce",sug:"(reemplazable por melón coquito, pepino dulce o chirimoya)",pres:"Unidad entera mediana (~1.5 kg)",frec:"Semanal",pUnit:6.0,cant:1,techo:6.0,active:true},
+  {id:"CAN-45",num:45,lista:"Canasta Alimentación",rubro:"7. Frutas (Casa y Lonchera)",nombre:"Frutas adicionales de estación",sug:"(mango, fresa, melón, mandarina, uva o sandía según temporada)",pres:"Kg / Bandeja 1 kg",frec:"Semanal",pUnit:5.0,cant:2,techo:10.0,active:true},
+  {id:"ALI-08",num:46,lista:"Canasta Alimentación",rubro:"8. Extras y Recreación",nombre:"Gustos y Extras (Partida ALI-08)",sug:"(S/ 5 diario prom. x 20 días: galleta, helado, jugo - control semanal S/ 25)",pres:"Presupuesto Semanal (5 días)",frec:"Semanal",pUnit:5.0,cant:5,techo:25.0,active:true},
+
+  {id:"ASE-1",num:1,lista:"Útiles de Aseo Personal",rubro:"1. Cuidado Capilar",nombre:"Shampoo familiar",sug:"(reemplazable entre anticaspa, hidratante, neutro o infantil sin lágrimas)",pres:"Frasco 400 ml",frec:"Bimestral (Mensualizado)",pUnit:25.5,cant:1,techo:25.5,active:true},
+  {id:"ASE-3",num:3,lista:"Útiles de Aseo Personal",rubro:"2. Higiene Corporal",nombre:"Jabón de tocador en barra",sug:"(reemplazable entre jabón de glicerina, avena, antibacterial o humectante)",pres:"Tripack (3 barras x 110 g)",frec:"Mensual",pUnit:9.9,cant:1,techo:9.9,active:true},
+  {id:"ASE-4",num:4,lista:"Útiles de Aseo Personal",rubro:"2. Higiene Corporal",nombre:"Jabón líquido para manos",sug:"(reemplazable por recarga económica en doypack de 800 ml)",pres:"Doypack recarga 500 ml",frec:"Mensual",pUnit:8.5,cant:1,techo:8.5,active:true},
+  {id:"ASE-5",num:5,lista:"Útiles de Aseo Personal",rubro:"3. Higiene Bucal",nombre:"Pasta dental familiar + infantil",sug:"(1 crema dental adulto + 1 gel dental niño con flúor)",pres:"Pack 2 tubos (90 g + 50 g)",frec:"Mensual",pUnit:23.3,cant:1,techo:23.3,active:true},
+  {id:"ASE-6",num:6,lista:"Útiles de Aseo Personal",rubro:"3. Higiene Bucal",nombre:"Cepillos dentales Adulto y Niño",sug:"(recambio odontológico recomendado cada 2 meses)",pres:"Pack x 1 unidades",frec:"Mensual",pUnit:12.0,cant:1,techo:12.0,active:true},
+  {id:"ASE-7",num:7,lista:"Útiles de Aseo Personal",rubro:"3. Higiene Bucal",nombre:"Papel Toalla",sug:"(compra para reposición continua del hogar)",pres:"Paquete x 6 rollos",frec:"Mensual",pUnit:13.9,cant:1,techo:13.9,active:true},
+  {id:"ASE-9",num:9,lista:"Útiles de Aseo Personal",rubro:"5. Papel y Descartables",nombre:"Papel higiénico doble hoja suave",sug:"(compra mensual para reposición continua del hogar)",pres:"Paquete x 40 rollos",frec:"Mensual",pUnit:22.9,cant:1,techo:22.9,active:true},
+  {id:"ASE-10",num:10,lista:"Útiles de Aseo Personal",rubro:"5. Papel y Descartables",nombre:"Toallas húmedas hipoalergénicas",sug:"(uso diario en casa, mochila y lonchera escolar)",pres:"Paquete x 80 unidades (con tapa)",frec:"Mensual",pUnit:13.0,cant:1,techo:13.0,active:true},
+  {id:"ASE-12",num:12,lista:"Útiles de Aseo Personal",rubro:"6. Cuidado de la Piel",nombre:"Lava vajilla, esponja",sug:"(limpieza de vajilla y utensilios)",pres:"Frasco 280 ml",frec:"Mensual",pUnit:6.0,cant:1,techo:6.0,active:true},
+  {id:"ASE-13",num:13,lista:"Útiles de Aseo Personal",rubro:"7. Afeitado e Higiene",nombre:"Detergente",sug:"(lavado de ropa familiar)",pres:"Bolsa de 2 kg",frec:"Mensual",pUnit:17.4,cant:1,techo:17.4,active:true},
+  {id:"ASE-14",num:14,lista:"Útiles de Aseo Personal",rubro:"7. Afeitado e Higiene",nombre:"Lejía",sug:"(desinfección general del hogar)",pres:"Botella 1 Ltr.",frec:"Mensual",pUnit:5.0,cant:1,techo:5.0,active:true},
+
+  {id:"VIV-01",num:1,lista:"Vivienda",rubro:"Alquiler / Cuota",nombre:"Departamento 1 (VIV-01)",sug:"(Pago mensual fijo de vivienda - Prioridad Alta)",pres:"Cuota Fija Mensual",frec:"Mensual",pUnit:690.2,cant:1,techo:690.2,active:true},
+  {id:"VIV-02",num:2,lista:"Vivienda",rubro:"Alquiler / Cuota",nombre:"Departamento 2 (VIV-02)",sug:"(Pago mensual fijo de vivienda - Prioridad Alta)",pres:"Cuota Fija Mensual",frec:"Mensual",pUnit:901.6,cant:1,techo:901.6,active:true},
+  {id:"VIV-03",num:3,lista:"Vivienda",rubro:"Mantenimiento",nombre:"Mantenimiento Edificio (VIV-03)",sug:"(Cuota fija de mantenimiento de edificio y áreas comunes)",pres:"Recibo Mensual Edificio",frec:"Mensual",pUnit:135.0,cant:1,techo:135.0,active:true},
+
+  {id:"SER-01",num:1,lista:"Servicios",rubro:"Energía Eléctrica",nombre:"Servicio de Luz (SER-01)",sug:"(Consumo eléctrico mensual - Meta de ahorro en Mejor Escenario: S/ 50)",pres:"Recibo Mensual Luz",frec:"Mensual",pUnit:60.0,cant:1,techo:60.0,active:true},
+  {id:"SER-02",num:2,lista:"Servicios",rubro:"Gas Natural",nombre:"Servicio de Gas Natural (SER-02)",sug:"(Recibo mensual de gas natural / cuota fija)",pres:"Recibo Mensual Gas",frec:"Mensual",pUnit:240.0,cant:1,techo:240.0,active:true},
+  {id:"SER-03",num:3,lista:"Servicios",rubro:"Telecomunicaciones",nombre:"Servicio de Internet (SER-03)",sug:"(Servicio de internet hogar - Optimizable a tarifa promocional S/ 50)",pres:"Recibo Mensual Fibra",frec:"Mensual",pUnit:55.0,cant:1,techo:55.0,active:true},
+  {id:"SER-04",num:4,lista:"Servicios",rubro:"Telecomunicaciones",nombre:"Plan Móvil / Celular (SER-04)",sug:"(Plan móvil mensual - Migración a plan de S/ 40 en Mejor Escenario)",pres:"Recibo Mensual Móvil",frec:"Mensual",pUnit:50.0,cant:1,techo:50.0,active:true},
+
+  {id:"TRA-01",num:1,lista:"Transporte",rubro:"Actividades Extracurriculares",nombre:"Pasajes - Deporte / Taller (TRA-01)",sug:"(S/ 4 ida y S/ 4 vuelta x 3 días a la semana = S/ 24/sem; S/ 96/mes)",pres:"3 días/semana (Ida y Vuelta)",frec:"Semanal",pUnit:8.0,cant:3,techo:24.0,active:true},
+  {id:"TRA-02",num:2,lista:"Transporte",rubro:"Actividades Extracurriculares",nombre:"Pasajes - Idiomas / Curso (TRA-02)",sug:"(S/ 4 ida y S/ 4 vuelta x 1 día a la semana = S/ 8/sem; S/ 32/mes)",pres:"1 día/semana (Ida y Vuelta)",frec:"Semanal",pUnit:8.0,cant:1,techo:8.0,active:true},
+  {id:"TRA-03",num:3,lista:"Transporte",rubro:"Movilidad Escolar",nombre:"Pasajes - Colegio (TRA-03)",sug:"(S/ 4 ida y S/ 4 vuelta x 5 días a la semana = S/ 40/sem; S/ 160/mes)",pres:"5 días/semana (Lunes a Viernes)",frec:"Semanal",pUnit:8.0,cant:5,techo:40.0,active:true}
+];
+const DEFAULT_CATEGORIES = ["Canasta Alimentación", "Útiles de Aseo Personal", "Vivienda", "Servicios", "Transporte"];
+
+// METADATOS VISUALES DE CATEGORÍAS CON ÍCONOS CIRCULARES GRANDES Y NOMBRES CORTOS
+const PRESET_CAT_META = {
+  "Canasta Alimentación": { shortName: "Alimentación", icon: "🍎", bg: "#22C55E" },
+  "Útiles de Aseo Personal": { shortName: "Aseo", icon: "🧴", bg: "#14B8A6" },
+  "Vivienda": { shortName: "Vivienda", icon: "🏠", bg: "#F97316" },
+  "Servicios": { shortName: "Servicios", icon: "💡", bg: "#8B5CF6" },
+  "Transporte": { shortName: "Transporte", icon: "🚌", bg: "#3B82F6" }
+};
+
+const CUSTOM_CAT_EMOJIS = ["❤️", "🎓", "🎁", "☕", "🐾", "👕", "🎮", "🛠️", "💊", "🧺"];
+const CUSTOM_CAT_COLORS = ["#EF4444", "#EC4899", "#0EA5E9", "#6366F1", "#D97706", "#10B981"];
+
+const SALIDAS_MAP = {
+  "Semanal": ["Semana 1", "Semana 2", "Semana 3", "Semana 4"],
+  "Quincenal": ["Quincena 1", "Quincena 2"],
+  "Mensual": ["Salida Mensual"],
+  "Diario": ["Diario - Sem 1 (7d)", "Diario - Sem 2 (7d)", "Diario - Sem 3 (7d)", "Diario - Sem 4 (9d)"],
+  "Bimestral (Mensualizado)": ["Salida Bimestral"],
+  "TODAS": ["Salida Mensual", "Semana 1", "Semana 2", "Semana 3", "Semana 4", "Quincena 1", "Quincena 2", "Diario - Sem 1 (7d)", "Salida Bimestral"]
+};
+
+const PALETTE_WARM_DONUT = ["#F59E0B", "#10B981", "#0EA5E9", "#8B5CF6", "#F43F5E", "#14B8A6", "#EC4899"];
+
+let profilesList = ["Principal"];
+let currentProfile = "Principal";
+let currentMonth = "Octubre 2026";
+let itemsDB = [];
+let logsDB = {};
+let hormigaDB = []; // Guarda [{ id, mes, desc, monto, fecha }]
+let userConfig = {
+  metaMode: "AUTO",
+  customMetaVal: 3809.05,
+  diffMode: "BOTH",
+  checkBehavior: "AUTOFILL_TECHO",
+  customCategories: [],
+  customCategoryMeta: {}
+};
+let currentSalida = "Semana 1";
+let currentView = "home";
+let donutDataCache = [];
+
+// Variables de estado de Historia (History API / popstate)
+let viewHistoryStack = ["home"];
+let isHandlingPopState = false;
+
+// Variables de estado para la Calculadora a Pantalla Completa
+let calcTargetInputId = null;
+let calcTargetItemRealId = null;
+let calcExpression = "";
+let calcCurrentResult = 0;
+let selectedCustomEmoji = "❤️";
+
+function getStorageKeys(prof) {
+  const p = prof || currentProfile;
+  return {
+    items: `hogar_v3_${p}_items`,
+    logs: `hogar_v3_${p}_logs`,
+    hormiga: `hogar_v3_${p}_hormiga`,
+    cfg: `hogar_v3_${p}_cfg`
+  };
+}
+
+function loadAppState() {
+  const savedProfiles = localStorage.getItem("hogar_v3_profiles_list");
+  const savedActiveProf = localStorage.getItem("hogar_v3_active_profile");
+  if (savedProfiles) profilesList = JSON.parse(savedProfiles);
+  if (savedActiveProf && profilesList.includes(savedActiveProf)) currentProfile = savedActiveProf;
+
+  const keys = getStorageKeys(currentProfile);
+  const sItems = localStorage.getItem(keys.items);
+  const sLogs = localStorage.getItem(keys.logs);
+  const sHorm = localStorage.getItem(keys.hormiga);
+  const sCfg = localStorage.getItem(keys.cfg);
+
+  itemsDB = sItems ? JSON.parse(sItems) : JSON.parse(JSON.stringify(EXCEL_67_ITEMS));
+  logsDB = sLogs ? JSON.parse(sLogs) : {};
+  hormigaDB = sHorm ? JSON.parse(sHorm) : [];
+  if (sCfg) userConfig = { ...userConfig, ...JSON.parse(sCfg) };
+  if (!userConfig.customCategories) userConfig.customCategories = [];
+  if (!userConfig.customCategoryMeta) userConfig.customCategoryMeta = {};
+
+  renderProfileSelectors();
+}
+
+function saveAppState() {
+  localStorage.setItem("hogar_v3_profiles_list", JSON.stringify(profilesList));
+  localStorage.setItem("hogar_v3_active_profile", currentProfile);
+  const keys = getStorageKeys(currentProfile);
+  localStorage.setItem(keys.items, JSON.stringify(itemsDB));
+  localStorage.setItem(keys.logs, JSON.stringify(logsDB));
+  localStorage.setItem(keys.hormiga, JSON.stringify(hormigaDB));
+  localStorage.setItem(keys.cfg, JSON.stringify(userConfig));
+}
+
+function getAllCategoriesList() {
+  const fromItems = itemsDB.map(x => x.lista);
+  return [...new Set([...DEFAULT_CATEGORIES, ...(userConfig.customCategories || []), ...fromItems])];
+}
+
+function getCategoryVisualMeta(catName, idx) {
+  if (PRESET_CAT_META[catName]) return PRESET_CAT_META[catName];
+  if (userConfig.customCategoryMeta && userConfig.customCategoryMeta[catName]) {
+    return userConfig.customCategoryMeta[catName];
+  }
+  return {
+    shortName: catName.length > 12 ? catName.slice(0, 11) + "…" : catName,
+    icon: CUSTOM_CAT_EMOJIS[idx % CUSTOM_CAT_EMOJIS.length],
+    bg: CUSTOM_CAT_COLORS[idx % CUSTOM_CAT_COLORS.length]
+  };
+}
+
+function renderProfileSelectors() {
+  const sel = document.getElementById("sb-profile-select");
+  sel.innerHTML = profilesList.map(p => `<option value="${p}" ${p===currentProfile?'selected':''}>👤 ${p}</option>`).join("");
+}
+
+function switchUserProfile(newProf) {
+  currentProfile = newProf;
+  localStorage.setItem("hogar_v3_active_profile", currentProfile);
+  loadAppState();
+  populateFilterDropdowns();
+  refreshAllViews();
+}
+
+function createNewUserProfile() {
+  const name = prompt("Escribe el nombre del nuevo perfil (ej. Hogar, Casa, Mi Lista Nueva):");
+  if (!name || !name.trim()) return;
+  const clean = name.trim();
+  if (!profilesList.includes(clean)) profilesList.push(clean);
+  const startZero = confirm(`¿Quieres iniciar el usuario "${clean}" EN CERO (S/ 0.00)?\n\n• Aceptar = Empezar en S/ 0.00 vacío\n• Cancelar = Empezar con la lista completa de S/ 3,809.05`);
+  currentProfile = clean;
+  itemsDB = startZero ? [] : JSON.parse(JSON.stringify(EXCEL_67_ITEMS));
+  logsDB = {};
+  hormigaDB = [];
+  saveAppState();
+  renderProfileSelectors();
+  populateFilterDropdowns();
+  refreshAllViews();
+  toggleSidebar(false);
+}
+
+// =========================================================================================
+// GESTIÓN DE HISTORIAL INTERNO PARA EL BOTÓN "ATRÁS" DEL CELULAR (History API / popstate)
+// =========================================================================================
+function isAnyOverlayOrSecondaryViewActive() {
+  const calcOpen = document.getElementById("fullscreen-calc").classList.contains("open");
+  const modalOpen = document.querySelectorAll(".modal-backdrop.open").length > 0;
+  const sbOpen = document.getElementById("sb-drawer").classList.contains("open");
+  const notHome = currentView !== "home";
+  return calcOpen || modalOpen || sbOpen || notHome;
+}
+
+function pushAppHistoryState(label) {
+  if (isHandlingPopState) return;
+  try {
+    window.history.pushState({ verticeApp: true, layer: label || currentView, ts: Date.now() }, "");
+  } catch (e) {}
+}
+
+window.addEventListener("popstate", function () {
+  isHandlingPopState = true;
+
+  // 1. Si la Calculadora a pantalla completa está abierta, la cierra y permanece en la vista actual
+  const calcEl = document.getElementById("fullscreen-calc");
+  if (calcEl && calcEl.classList.contains("open")) {
+    closeCalculator(true);
+    if (isAnyOverlayOrSecondaryViewActive()) {
+      try { window.history.pushState({ verticeApp: true, layer: "guard" }, ""); } catch (e) {}
+    }
+    isHandlingPopState = false;
+    return;
+  }
+
+  // 2. Si algún Modal (#modal-item, #modal-hormiga, #modal-kpi, #modal-zero) está abierto, lo cierra
+  const openModals = document.querySelectorAll(".modal-backdrop.open");
+  if (openModals.length > 0) {
+    const lastModal = openModals[openModals.length - 1];
+    lastModal.classList.remove("open");
+    if (isAnyOverlayOrSecondaryViewActive()) {
+      try { window.history.pushState({ verticeApp: true, layer: "guard" }, ""); } catch (e) {}
+    }
+    isHandlingPopState = false;
+    return;
+  }
+
+  // 3. Si el Menú Lateral (#sb-drawer) está desplegado, lo cierra
+  const sbDrawer = document.getElementById("sb-drawer");
+  if (sbDrawer && sbDrawer.classList.contains("open")) {
+    toggleSidebar(false, true);
+    if (isAnyOverlayOrSecondaryViewActive()) {
+      try { window.history.pushState({ verticeApp: true, layer: "guard" }, ""); } catch (e) {}
+    }
+    isHandlingPopState = false;
+    return;
+  }
+
+  // 4. Si el usuario está en cualquier vista secundaria ("dashboard", "registrar", "configurar", "hormiga", "salidas", "imprimir"), regresa siempre a "#view-home"
+  if (currentView !== "home") {
+    viewHistoryStack = ["home"];
+    navigateTo("home", true);
+    isHandlingPopState = false;
+    return;
+  }
+
+  // 5. Si ya está en "#view-home" sin modales ni menús abiertos, permite salir normalmente
+  isHandlingPopState = false;
+});
+
+// =========================================================================================
+// MENÚ LATERAL FLOTANTE Y SUBMENÚS ACORDEÓN
+// =========================================================================================
+function toggleSidebar(forceState, fromPopState) {
+  const drawer = document.getElementById("sb-drawer");
+  const overlay = document.getElementById("sb-overlay");
+  const handle = document.getElementById("left-handle");
+  const arrow = document.getElementById("handle-arrow");
+  const wasOpen = drawer.classList.contains("open");
+  const isOpen = (forceState !== undefined) ? forceState : !wasOpen;
+
+  if (isOpen) {
+    drawer.classList.add("open");
+    overlay.classList.add("open");
+    handle.classList.add("shifted");
+    arrow.textContent = "❮";
+    if (!wasOpen && !fromPopState) pushAppHistoryState("sidebar");
+  } else {
+    drawer.classList.remove("open");
+    overlay.classList.remove("open");
+    handle.classList.remove("shifted");
+    arrow.textContent = "❯";
+  }
+}
+
+function toggleSubmenu(subId) {
+  const body = document.getElementById(subId);
+  const arr = document.getElementById("arr-" + subId);
+  const isOpen = body.classList.contains("open");
+  body.classList.toggle("open", !isOpen);
+  if (arr) arr.textContent = !isOpen ? "▼" : "▶";
+}
+
+function navigateTo(viewId, fromPopState) {
+  const prevView = currentView;
+  currentView = viewId;
+
+  if (!fromPopState && prevView !== viewId) {
+    if (viewId === "home") {
+      viewHistoryStack = ["home"];
+    } else {
+      viewHistoryStack = ["home", viewId];
+      pushAppHistoryState("view-" + viewId);
+    }
+  }
+
+  document.querySelectorAll(".view-section").forEach(s => s.classList.remove("active"));
+  const targetSec = document.getElementById("view-" + viewId);
+  if (targetSec) targetSec.classList.add("active");
+
+  document.querySelectorAll("#sub-vistas .sb-btn").forEach(b => b.classList.remove("active"));
+  const navBtn = document.getElementById("nav-" + viewId);
+  if (navBtn) navBtn.classList.add("active");
+
+  toggleSidebar(false, true);
+  refreshAllViews();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// =========================================================================================
+// CABECERA DINÁMICA, BOTÓN CASITA, BOTÓN CANASTA, BOTÓN WHATSAPP Y CALCULADORA FLOTANTE
+// =========================================================================================
+function updateHeaderAndWhatsAppVisibility() {
+  const meta = getGlobalMetaBudget();
+  const hoja = document.getElementById("f-hoja").value || "Canasta Alimentación";
+  const rubro = document.getElementById("f-rubro").value || "TODOS";
+  const homeBtn = document.getElementById("top-home-square-btn");
+  const waBtn = document.getElementById("top-wa-square-btn");
+  const cartBtn = document.getElementById("top-cart-square-btn");
+  const calcFab = document.getElementById("floating-calc-btn");
+
+  const titles = {
+    home: "Inicio",
+    dashboard: "Cómo va mi Plata",
+    registrar: "Comprar y Pagar",
+    salidas: "Mis Gastos por Semana",
+    hormiga: "Gastos Hormiga",
+    configurar: "Planear mis Compras",
+    imprimir: "Lista para Imprimir"
+  };
+  document.getElementById("hdr-view-title").textContent = titles[currentView] || "Mi Hogar";
+
+  if (currentView === "registrar") {
+    const rTxt = rubro === "TODOS" ? "Todos los grupos" : rubro;
+    document.getElementById("hdr-context-sub").textContent = `${currentMonth} • ${hoja} (${rTxt}) • ${currentSalida}`;
+  } else if (currentView === "hormiga") {
+    const sumH = getMonthHormigaTotal();
+    document.getElementById("hdr-context-sub").textContent = `${currentMonth} • Gastos fuera de lo programado (Acumulado: S/ ${sumH.toFixed(2)})`;
+  } else if (currentView === "configurar") {
+    const activeCount = itemsDB.filter(x => x.active !== false).length;
+    document.getElementById("hdr-context-sub").textContent = `${activeCount} productos activos • Presupuesto: S/ ${meta.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+  } else {
+    document.getElementById("hdr-context-sub").textContent = `${currentMonth} • Usuario: ${currentProfile} • Presupuesto: S/ ${meta.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+  }
+
+  // Resaltar el botón de Casita cuando estamos en 'home'
+  if (homeBtn) {
+    homeBtn.classList.toggle("active-home", currentView === "home");
+  }
+
+  // Resaltar el botón de Canasta cuando estamos en 'registrar'
+  if (cartBtn) {
+    cartBtn.classList.toggle("active-cart", currentView === "registrar");
+  }
+
+  // Mostrar el botón chico de WhatsApp en Inicio, Cómo va mi Plata y Comprar y Pagar
+  if (currentView === "home" || currentView === "dashboard" || currentView === "registrar") {
+    waBtn.style.display = "flex";
+  } else {
+    waBtn.style.display = "none";
+  }
+
+  // Mostrar el botón flotante de Calculadora (solo ícono) en Comprar y Pagar y Gastos Hormiga
+  if (calcFab) {
+    calcFab.classList.toggle("visible", currentView === "registrar" || currentView === "hormiga");
+  }
+}
+
+function shareCurrentContextWhatsApp() {
+  if (currentView === "registrar") {
+    shareViaWhatsApp("OUTING");
+  } else {
+    shareViaWhatsApp("GLOBAL");
+  }
+}
+
+// =========================================================================================
+// CALCULADORA SIMPLE A PANTALLA COMPLETA (#fullscreen-calc)
+// =========================================================================================
+function openCalculator(targetId, contextLabel, itemRealId) {
+  calcTargetInputId = targetId || null;
+  calcTargetItemRealId = itemRealId || null;
+
+  const badge = document.getElementById("fcalc-context-label");
+  const useWrap = document.getElementById("fcalc-use-wrap");
+
+  if (calcTargetInputId || calcTargetItemRealId) {
+    badge.textContent = `Destino: ${contextLabel || 'Campo de monto'}`;
+    useWrap.style.display = "block";
+    let initVal = "";
+    if (calcTargetInputId && document.getElementById(calcTargetInputId)) {
+      initVal = document.getElementById(calcTargetInputId).value;
+    } else if (calcTargetItemRealId) {
+      const lg = logsDB[getLogKey(currentMonth, currentSalida, calcTargetItemRealId)];
+      if (lg && lg.realPrice !== "") initVal = String(lg.realPrice);
+    }
+    calcExpression = (initVal && !isNaN(parseFloat(initVal)) && parseFloat(initVal) > 0) ? String(initVal) : "";
+  } else {
+    badge.textContent = contextLabel ? `Calculadora • ${contextLabel}` : "Calculadora de Apoyo";
+    useWrap.style.display = "none";
+  }
+
+  evaluateCalcPreview();
+  const overlay = document.getElementById("fullscreen-calc");
+  if (!overlay.classList.contains("open")) {
+    overlay.classList.add("open");
+    pushAppHistoryState("calculator");
+  }
+}
+
+function closeCalculator(fromPopState) {
+  const overlay = document.getElementById("fullscreen-calc");
+  overlay.classList.remove("open");
+}
+
+function calcInput(token) {
+  if (token === "C") {
+    calcExpression = "";
+  } else if (token === "BACK") {
+    calcExpression = calcExpression.slice(0, -1);
+  } else if (token === "=") {
+    evaluateCalcPreview(true);
+    return;
+  } else if (token === "%") {
+    if (calcExpression) {
+      calcExpression += "/100";
+    }
+  } else {
+    const operators = ["+", "-", "*", "/"];
+    const lastChar = calcExpression.slice(-1);
+    if (operators.includes(token) && operators.includes(lastChar)) {
+      calcExpression = calcExpression.slice(0, -1) + token;
+    } else {
+      calcExpression += token;
+    }
+  }
+  evaluateCalcPreview(false);
+}
+
+function evaluateCalcPreview(commitResult) {
+  const exprView = document.getElementById("fcalc-expr-view");
+  const resView = document.getElementById("fcalc-res-view");
+  const btnPreview = document.getElementById("fcalc-btn-amount-preview");
+
+  const prettyExpr = calcExpression
+    ? calcExpression.replace(/\*/g, " × ").replace(/\//g, " ÷ ").replace(/\+/g, " + ").replace(/-/g, " − ")
+    : "0";
+  exprView.textContent = prettyExpr;
+
+  if (!calcExpression) {
+    calcCurrentResult = 0;
+    resView.textContent = "0.00";
+    if (btnPreview) btnPreview.textContent = "S/ 0.00";
+    return;
+  }
+
+  try {
+    const sanitized = calcExpression.replace(/[^0-9+\-*/.]/g, "").replace(/[+\-*/.]+$/, "");
+    if (!sanitized) {
+      calcCurrentResult = 0;
+    } else {
+      const val = Function('"use strict"; return (' + sanitized + ')')();
+      if (typeof val === "number" && isFinite(val)) {
+        calcCurrentResult = Math.max(0, Math.round(val * 100) / 100);
+      }
+    }
+  } catch (e) {}
+
+  resView.textContent = calcCurrentResult.toFixed(2);
+  if (btnPreview) btnPreview.textContent = `S/ ${calcCurrentResult.toFixed(2)}`;
+
+  if (commitResult && calcCurrentResult > 0) {
+    calcExpression = String(calcCurrentResult);
+    exprView.textContent = `${calcCurrentResult.toFixed(2)}`;
+  }
+}
+
+function applyCalculatorResultToField() {
+  const finalVal = calcCurrentResult > 0 ? calcCurrentResult.toFixed(2) : "0.00";
+
+  if (calcTargetItemRealId) {
+    const inp = document.getElementById("rinp-" + calcTargetItemRealId);
+    if (inp) inp.value = finalVal;
+    onInputRealPrice(calcTargetItemRealId, finalVal);
+  } else if (calcTargetInputId) {
+    const el = document.getElementById(calcTargetInputId);
+    if (el) {
+      el.value = finalVal;
+      if (calcTargetInputId === "m-punit") {
+        autoCalcModalTecho();
+      }
+    }
+  }
+  closeCalculator();
+}
+
+// =========================================================================================
+// CÁLCULOS MATEMÁTICOS, GASTOS HORMIGA Y FILTROS
+// =========================================================================================
+function getFactorMes(frec) {
+  if (frec === "Diario") return 30;
+  if (frec === "Semanal") return 4;
+  if (frec === "Quincenal") return 2;
+  if (frec === "Bimestral (Mensualizado)") return 0.5;
+  return 1;
+}
+
+function getEffectiveTechoSalida(item, salidaName) {
+  if (item.frec === "Diario") {
+    if (salidaName.includes("9d")) return item.techo * 9;
+    if (salidaName.includes("7d")) return item.techo * 7;
+  }
+  return item.techo;
+}
+
+function getLogKey(mes, salida, itemId) {
+  return `${mes}|${salida}|${itemId}`;
+}
+
+function getGlobalMetaBudget() {
+  if (userConfig.metaMode === "CUSTOM") return parseFloat(userConfig.customMetaVal) || 0;
+  return itemsDB.filter(x => x.active !== false).reduce((sum, it) => sum + (it.techo * getFactorMes(it.frec)), 0);
+}
+
+function getMonthHormigaList() {
+  return hormigaDB.filter(h => h.mes === currentMonth);
+}
+
+function getMonthHormigaTotal() {
+  return getMonthHormigaList().reduce((acc, h) => acc + (parseFloat(h.monto) || 0), 0);
+}
+
+function getMonthScheduledSpentTotal() {
+  const activeItems = itemsDB.filter(x => x.active !== false);
+  let totalScheduled = 0;
+  Object.keys(SALIDAS_MAP).filter(k => k !== "TODAS").forEach(frecKey => {
+    const fOut = frecKey === "Bimestral (Mensualizado)" ? 0.5 : 1;
+    SALIDAS_MAP[frecKey].forEach(salName => {
+      activeItems.filter(x => x.frec === frecKey).forEach(it => {
+        const lg = logsDB[getLogKey(currentMonth, salName, it.id)];
+        if (lg && lg.checked && lg.realPrice !== "" && !isNaN(lg.realPrice)) {
+          totalScheduled += parseFloat(lg.realPrice) * fOut;
+        }
+      });
+    });
+  });
+  return totalScheduled;
+}
+
+function syncMonthSelection(newMes) {
+  currentMonth = newMes;
+  document.getElementById("sb-mes-select").value = newMes;
+  refreshAllViews();
+}
+
+function populateFilterDropdowns() {
+  const selHoja = document.getElementById("f-hoja");
+  const prevHoja = selHoja.value || "Canasta Alimentación";
+  const allSheets = getAllCategoriesList();
+
+  selHoja.innerHTML = allSheets.map(sh => {
+    const sumSh = itemsDB.filter(x => x.active !== false && x.lista === sh)
+                         .reduce((acc, it) => acc + it.techo * getFactorMes(it.frec), 0);
+    return `<option value="${sh}">${sh} (S/ ${sumSh.toFixed(2)})</option>`;
+  }).join("") + `<option value="TODAS">Todas las Categorías</option>`;
+
+  if ([...selHoja.options].some(o => o.value === prevHoja)) selHoja.value = prevHoja;
+  populateRubroDropdown();
+}
+
+function populateRubroDropdown() {
+  const hoja = document.getElementById("f-hoja").value;
+  const selRubro = document.getElementById("f-rubro");
+  const prevR = selRubro.value || "TODOS";
+  const sub = itemsDB.filter(x => x.active !== false && (hoja === "TODAS" || x.lista === hoja));
+  const rubros = [...new Set(sub.map(x => x.rubro))].sort();
+
+  selRubro.innerHTML = `<option value="TODOS">Todos los grupos (${rubros.length})</option>` +
+    rubros.map(r => `<option value="${r}">${r}</option>`).join("");
+
+  if (rubros.includes(prevR)) selRubro.value = prevR;
+}
+
+function onHojaFilterChange() {
+  const hoja = document.getElementById("f-hoja").value;
+  if (hoja === "Vivienda" || hoja === "Servicios") document.getElementById("f-frec").value = "Mensual";
+  else if (hoja === "Transporte") document.getElementById("f-frec").value = "Semanal";
+  populateRubroDropdown();
+  onFrecFilterChange();
+}
+
+function onFrecFilterChange() {
+  const frec = document.getElementById("f-frec").value;
+  const validSalidas = SALIDAS_MAP[frec] || ["Salida Mensual"];
+  if (!validSalidas.includes(currentSalida)) currentSalida = validSalidas[0];
+  refreshAllViews();
+}
+
+function selectSalida(sal) {
+  currentSalida = sal;
+  refreshAllViews();
+}
+
+function isItemInSalida(item, salidaName) {
+  const frec = document.getElementById("f-frec").value;
+  if (frec !== "TODAS") return true;
+  if (salidaName === "Salida Mensual") return item.frec === "Mensual";
+  if (salidaName.startsWith("Semana")) return item.frec === "Semanal";
+  if (salidaName.startsWith("Quincena")) return item.frec === "Quincenal";
+  if (salidaName.startsWith("Diario")) return item.frec === "Diario";
+  if (salidaName.startsWith("Salida Bimestral")) return item.frec === "Bimestral (Mensualizado)";
+  return true;
+}
+
+function getActiveFilteredItems() {
+  const hoja = document.getElementById("f-hoja").value;
+  const rubro = document.getElementById("f-rubro").value;
+  const frec = document.getElementById("f-frec").value;
+  return itemsDB.filter(x => {
+    if (x.active === false) return false;
+    if (hoja !== "TODAS" && x.lista !== hoja) return false;
+    if (rubro !== "TODOS" && x.rubro !== rubro) return false;
+    if (frec !== "TODAS" && x.frec !== frec) return false;
+    return true;
+  }).sort((a,b) => a.rubro.localeCompare(b.rubro) || (a.num - b.num));
+}
+
+// =========================================================================================
+// CHECK (✓) Y PRECIO REAL — CUADRE EXACTO Y AMIGABLE
+// =========================================================================================
+function onToggleCheck(itemId) {
+  const item = itemsDB.find(x => x.id === itemId);
+  if (!item) return;
+  const effTecho = getEffectiveTechoSalida(item, currentSalida);
+  const key = getLogKey(currentMonth, currentSalida, itemId);
+
+  if (!logsDB[key]) logsDB[key] = { checked: false, realPrice: "" };
+  logsDB[key].checked = !logsDB[key].checked;
+
+  if (logsDB[key].checked && (logsDB[key].realPrice === "" || isNaN(logsDB[key].realPrice))) {
+    if (userConfig.checkBehavior === "AUTOFILL_TECHO") {
+      logsDB[key].realPrice = effTecho;
+    }
+  }
+  saveAppState();
+  refreshAllViews();
+}
+
+function onInputRealPrice(itemId, valStr) {
+  const item = itemsDB.find(x => x.id === itemId);
+  if (!item) return;
+  const effTecho = getEffectiveTechoSalida(item, currentSalida);
+  const key = getLogKey(currentMonth, currentSalida, itemId);
+
+  if (!logsDB[key]) logsDB[key] = { checked: false, realPrice: "" };
+  if (valStr === "" || isNaN(parseFloat(valStr))) {
+    logsDB[key].realPrice = "";
+    logsDB[key].checked = false;
+  } else {
+    logsDB[key].realPrice = parseFloat(valStr);
+    logsDB[key].checked = true;
+  }
+  saveAppState();
+
+  const lg = logsDB[key];
+  const card = document.getElementById("rcard-" + itemId);
+  const chk = document.getElementById("rchk-" + itemId);
+  const pill = document.getElementById("rpill-" + itemId);
+
+  if (card && chk && pill) {
+    if (lg.checked) { card.classList.add("checked"); chk.classList.add("checked"); chk.textContent = "✓"; }
+    else { card.classList.remove("checked"); chk.classList.remove("checked"); chk.textContent = ""; }
+
+    if (lg.checked && lg.realPrice !== "" && !isNaN(lg.realPrice)) {
+      const diff = effTecho - parseFloat(lg.realPrice);
+      if (diff >= 0) { pill.className = "diff-pill pos"; pill.textContent = `Ahorré +S/ ${diff.toFixed(2)}`; }
+      else { pill.className = "diff-pill neg"; pill.textContent = `Pasé -S/ ${Math.abs(diff).toFixed(2)}`; }
+    } else {
+      pill.className = "diff-pill neu"; pill.textContent = "Pendiente";
+    }
+  }
+
+  renderRegistrarKPIsAndPills();
+  renderDashboardView();
+  renderSalidasView();
+  renderHormigaView();
+  renderPrintView();
+}
+
+// =========================================================================================
+// GRÁFICO CIRCULAR INTERACTIVO (DONUT CHART SVG)
+// =========================================================================================
+function renderInteractiveDonutChart(sheetMap, totalBudget) {
+  const container = document.getElementById("dash-donut-section");
+  const entries = Object.entries(sheetMap).filter(([_, st]) => st.techoMes > 0).sort((a,b) => b[1].techoMes - a[1].techoMes);
+
+  if (entries.length === 0 || totalBudget <= 0) {
+    container.innerHTML = `<p style="grid-column:1/-1; text-align:center; color:var(--slate-muted); padding:16px;">Aún no hay productos con precio mayor a S/ 0.00. Ve a <b>"Planear mis Compras"</b> para adicionar tus gastos.</p>`;
+    return;
+  }
+
+  donutDataCache = entries.map(([name, st], idx) => ({
+    name,
+    techoMes: st.techoMes,
+    realMes: st.realMes,
+    count: st.count,
+    pct: (st.techoMes / totalBudget) * 100,
+    color: PALETTE_WARM_DONUT[idx % PALETTE_WARM_DONUT.length]
+  }));
+
+  const radius = 84;
+  const circumference = 2 * Math.PI * radius;
+  let accumulatedPct = 0;
+
+  const circlesSvg = donutDataCache.map((d, idx) => {
+    const strokeLen = (d.pct / 100) * circumference;
+    const gap = entries.length > 1 ? 2.5 : 0;
+    const visibleLen = Math.max(0.5, strokeLen - gap);
+    const offset = -((accumulatedPct / 100) * circumference);
+    accumulatedPct += d.pct;
+
+    return `<circle class="donut-slice" id="dslice-${idx}" r="${radius}" cx="0" cy="0"
+              fill="transparent" stroke="${d.color}" stroke-width="34"
+              stroke-dasharray="${visibleLen} ${circumference}"
+              stroke-dashoffset="${offset}"
+              onmouseenter="highlightDonutSlice(${idx})"
+              onclick="onDonutSliceClick(${idx})" />`;
+  }).join("");
+
+  const legendHtml = donutDataCache.map((d, idx) => `
+    <div class="legend-item" id="dleg-${idx}" onmouseenter="highlightDonutSlice(${idx})" onclick="onDonutSliceClick(${idx})">
+      <div class="leg-left">
+        <span class="leg-dot" style="background:${d.color};"></span>
+        <div>
+          <div class="leg-name">${d.name}</div>
+          <div class="leg-sub">${d.count} productos • Gastado: S/ ${d.realMes.toFixed(2)}</div>
+        </div>
+      </div>
+      <div class="leg-right">
+        <div class="leg-val">S/ ${d.techoMes.toFixed(2)}</div>
+        <div class="leg-pct">${d.pct.toFixed(1)}% del mes</div>
+      </div>
+    </div>
+  `).join("");
+
+  container.innerHTML = `
+    <div class="donut-svg-wrap">
+      <svg class="donut-svg" viewBox="-120 -120 240 240">
+        <g transform="rotate(-90)">${circlesSvg}</g>
+        <text id="donut-center-lbl" x="0" y="-18" text-anchor="middle" fill="#64748B" font-size="10" font-weight="800">TOTAL DEL MES</text>
+        <text id="donut-center-val" x="0" y="6" text-anchor="middle" fill="#0F172A" font-size="18" font-weight="900">S/ ${totalBudget.toFixed(2)}</text>
+        <text id="donut-center-pct" x="0" y="25" text-anchor="middle" fill="#B45309" font-size="11" font-weight="800">100% (${entries.length} Categorías)</text>
+      </svg>
+    </div>
+    <div class="donut-legend">${legendHtml}</div>
+  `;
+}
+
+let lastSelectedSlice = -1;
+function highlightDonutSlice(idx) {
+  const d = donutDataCache[idx];
+  if (!d) return;
+  document.querySelectorAll(".donut-slice").forEach((el, i) => el.classList.toggle("active-slice", i === idx));
+  document.querySelectorAll(".legend-item").forEach((el, i) => el.classList.toggle("active-leg", i === idx));
+
+  const lbl = document.getElementById("donut-center-lbl");
+  const val = document.getElementById("donut-center-val");
+  const pct = document.getElementById("donut-center-pct");
+  if (lbl && val && pct) {
+    lbl.textContent = d.name.toUpperCase().slice(0, 20);
+    val.textContent = `S/ ${d.techoMes.toFixed(2)}`;
+    pct.textContent = `${d.pct.toFixed(1)}% • Gastado: S/ ${d.realMes.toFixed(2)}`;
+    pct.setAttribute("fill", "#B45309");
+  }
+}
+
+function onDonutSliceClick(idx) {
+  const d = donutDataCache[idx];
+  if (!d) return;
+  if (lastSelectedSlice === idx) {
+    openSheetFromDashboard(d.name);
+  } else {
+    lastSelectedSlice = idx;
+    highlightDonutSlice(idx);
+  }
+}
+
+// =========================================================================================
+// ENVÍO DE REPORTE POR WHATSAPP (CON DEDUCCIÓN DE GASTOS HORMIGA EN EL REPORTE GLOBAL)
+// =========================================================================================
+function shareViaWhatsApp(mode) {
+  const activeItems = itemsDB.filter(x => x.active !== false);
+  let msg = "";
+
+  if (mode === "GLOBAL") {
+    const meta = getGlobalMetaBudget();
+    const totalHormiga = getMonthHormigaTotal();
+    let totalReal = 0, totalTechoChk = 0, checksCount = 0;
+    const sheetLines = [];
+    const bySheet = {};
+
+    activeItems.forEach(it => {
+      if (!bySheet[it.lista]) bySheet[it.lista] = { techo: 0, real: 0 };
+      bySheet[it.lista].techo += it.techo * getFactorMes(it.frec);
+    });
+
+    Object.keys(SALIDAS_MAP).filter(k => k !== "TODAS").forEach(frecKey => {
+      const fOut = frecKey === "Bimestral (Mensualizado)" ? 0.5 : 1;
+      SALIDAS_MAP[frecKey].forEach(salName => {
+        activeItems.filter(x => x.frec === frecKey).forEach(it => {
+          const effT = getEffectiveTechoSalida(it, salName);
+          const lg = logsDB[getLogKey(currentMonth, salName, it.id)];
+          if (lg && lg.checked) {
+            checksCount++;
+            const rVal = (lg.realPrice !== "" && !isNaN(lg.realPrice)) ? parseFloat(lg.realPrice) : 0;
+            totalReal += rVal * fOut;
+            totalTechoChk += effT * fOut;
+            if (bySheet[it.lista]) bySheet[it.lista].real += rVal * fOut;
+          }
+        });
+      });
+    });
+
+    Object.entries(bySheet).forEach(([shName, st]) => {
+      sheetLines.push(`• *${shName}:* Gastado S/ ${st.real.toFixed(2)} de S/ ${st.techo.toFixed(2)}`);
+    });
+
+    const totalGastadoConHormiga = totalReal + totalHormiga;
+    const diffTotal = meta - totalGastadoConHormiga;
+    const ahorroChk = totalTechoChk - totalReal;
+
+    msg = `🏠 *RESUMEN DE MI HOGAR — ${currentMonth.toUpperCase()}*\n` +
+          `━━━━━━━━━━━━━━━━━━━━\n` +
+          `💰 *Presupuesto del Mes:* S/ ${meta.toFixed(2)}\n` +
+          `🛍️ *Compras Programadas (✓):* S/ ${totalReal.toFixed(2)} (${checksCount} compras)\n` +
+          `🐜 *Gastos Hormiga (No prog.):* S/ ${totalHormiga.toFixed(2)}\n` +
+          `👛 *Me queda por gastar (Saldo Neto):* S/ ${diffTotal.toFixed(2)}\n` +
+          `🎉 *${ahorroChk >= 0 ? 'Ahorro en compras programadas' : 'Exceso en compras programadas'}:* ${ahorroChk >= 0 ? '+' : '-'}S/ ${Math.abs(ahorroChk).toFixed(2)}\n` +
+          `━━━━━━━━━━━━━━━━━━━━\n` +
+          `📂 *Por Categoría:*\n` + sheetLines.join("\n") + `\n` +
+          `━━━━━━━━━━━━━━━━━━━━\n` +
+          `_Compras y Hogar • Vértice_`;
+  } else {
+    const hoja = document.getElementById("f-hoja").value;
+    const items = getActiveFilteredItems().filter(it => isItemInSalida(it, currentSalida));
+    let sTecho = 0, sReal = 0, sTechoChk = 0, cChk = 0;
+    const boughtLines = [];
+
+    items.forEach(it => {
+      const effT = getEffectiveTechoSalida(it, currentSalida);
+      sTecho += effT;
+      const lg = logsDB[getLogKey(currentMonth, currentSalida, it.id)];
+      if (lg && lg.checked) {
+        cChk++;
+        const rVal = (lg.realPrice !== "" && !isNaN(lg.realPrice)) ? parseFloat(lg.realPrice) : 0;
+        sReal += rVal;
+        sTechoChk += effT;
+        const d = effT - rVal;
+        boughtLines.push(`☑ ${it.nombre}: *S/ ${rVal.toFixed(2)}* _(Tope S/ ${effT.toFixed(2)} | ${d>=0?'Ahorré +S/ '+d.toFixed(2):'Pasé -S/ '+Math.abs(d).toFixed(2)})_`);
+      }
+    });
+
+    const diffSal = sTecho - sReal;
+    const ahoSal = sTechoChk - sReal;
+
+    msg = `🛒 *MI COMPRA: ${currentSalida.toUpperCase()} (${currentMonth})*\n` +
+          `📁 *Categoría:* ${hoja}\n` +
+          `━━━━━━━━━━━━━━━━━━━━\n` +
+          `💰 *Planeado para esta compra:* S/ ${sTecho.toFixed(2)}\n` +
+          `🛍️ *Lo que gasté (✓):* S/ ${sReal.toFixed(2)} (${cChk}/${items.length} comprados)\n` +
+          `👛 *Me queda por gastar:* S/ ${diffSal.toFixed(2)}\n` +
+          `🎉 *${ahoSal >= 0 ? 'Mi ahorro en esta compra' : 'Exceso en esta compra'}:* ${ahoSal >= 0 ? '+' : '-'}S/ ${Math.abs(ahoSal).toFixed(2)}\n` +
+          `━━━━━━━━━━━━━━━━━━━━\n` +
+          (boughtLines.length > 0 ? `*Productos Comprados (✓):*\n` + boughtLines.slice(0, 30).join("\n") + `\n━━━━━━━━━━━━━━━━━━━━\n` : `_Aún sin productos marcados en esta salida._\n`) +
+          `_Compras y Hogar • Vértice_`;
+  }
+
+  window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank");
+}
+
+// =========================================================================================
+// RENDERIZADO DE TODAS LAS PANTALLAS (INCLUYENDO GASTOS HORMIGA)
+// =========================================================================================
+function refreshAllViews() {
+  populateFilterDropdowns();
+  updateHeaderAndWhatsAppVisibility();
+
+  renderDashboardView();
+  renderRegistrarKPIsAndPills();
+  renderRegistrarItemsList();
+  renderSalidasView();
+  renderHormigaView();
+  renderConfigCatalogTable();
+  renderPrintView();
+}
+
+function renderDashboardView() {
+  const activeItems = itemsDB.filter(x => x.active !== false);
+  const metaGlobal = getGlobalMetaBudget();
+  const totalHormigaMes = getMonthHormigaTotal();
+
+  const allOutings = [
+    { name: "Salida Mensual", frec: "Mensual", factor: 1, desc: "Pagos fijos del mes, abarrotes y aseo" },
+    { name: "Semana 1", frec: "Semanal", factor: 1, desc: "Compras de la 1ra semana del mes" },
+    { name: "Semana 2", frec: "Semanal", factor: 1, desc: "Compras de la 2da semana del mes" },
+    { name: "Semana 3", frec: "Semanal", factor: 1, desc: "Compras de la 3ra semana del mes" },
+    { name: "Semana 4", frec: "Semanal", factor: 1, desc: "Compras de la 4ta semana del mes" },
+    { name: "Quincena 1", frec: "Quincenal", factor: 1, desc: "Compras de la 1ra quincena" },
+    { name: "Quincena 2", frec: "Quincenal", factor: 1, desc: "Compras de la 2da quincena" },
+    { name: "Diario - Sem 1 (7d)", frec: "Diario", factor: 1, desc: "Pan diario Semana 1 (7 días)" },
+    { name: "Diario - Sem 2 (7d)", frec: "Diario", factor: 1, desc: "Pan diario Semana 2 (7 días)" },
+    { name: "Diario - Sem 3 (7d)", frec: "Diario", factor: 1, desc: "Pan diario Semana 3 (7 días)" },
+    { name: "Diario - Sem 4 (9d)", frec: "Diario", factor: 1, desc: "Pan diario Semana 4 (9 días)" },
+    { name: "Salida Bimestral", frec: "Bimestral (Mensualizado)", factor: 0.5, desc: "Productos cada 2 meses (mitad por mes)" }
+  ];
+
+  let totalGastadoProgramado = 0, totalTechoMarcadosMes = 0, totalChecksCount = 0;
+  const sheetMap = {};
+  getAllCategoriesList().forEach(c => {
+    sheetMap[c] = { count: 0, techoMes: 0, realMes: 0, techoMarcados: 0 };
+  });
+
+  activeItems.forEach(it => {
+    const fMes = getFactorMes(it.frec);
+    const pMes = it.techo * fMes;
+    if (!sheetMap[it.lista]) sheetMap[it.lista] = { count: 0, techoMes: 0, realMes: 0, techoMarcados: 0 };
+    sheetMap[it.lista].count++;
+    sheetMap[it.lista].techoMes += pMes;
+  });
+
+  const outingsRowsHtml = allOutings.map(outObj => {
+    const sub = activeItems.filter(x => x.frec === outObj.frec);
+    let tSal = 0, rSal = 0, tChkSal = 0, cSal = 0;
+    sub.forEach(it => {
+      const effT = getEffectiveTechoSalida(it, outObj.name);
+      tSal += effT;
+      const lg = logsDB[getLogKey(currentMonth, outObj.name, it.id)];
+      if (lg && lg.checked) {
+        cSal++;
+        totalChecksCount++;
+        const rVal = (lg.realPrice !== "" && !isNaN(lg.realPrice)) ? parseFloat(lg.realPrice) : 0;
+        rSal += rVal;
+        tChkSal += effT;
+        totalGastadoProgramado += rVal * outObj.factor;
+        totalTechoMarcadosMes += effT * outObj.factor;
+        if (sheetMap[it.lista]) {
+          sheetMap[it.lista].realMes += rVal * outObj.factor;
+          sheetMap[it.lista].techoMarcados += effT * outObj.factor;
+        }
+      }
+    });
+
+    const diffTotalSalida = tSal - rSal;
+    const ahorroChecks = tChkSal - rSal;
+
+    return `
+      <tr style="cursor:pointer;" onclick="openSpecificOuting('${outObj.frec}', '${outObj.name}')">
+        <td><b>📅 ${outObj.name}</b><br/><small style="color:var(--slate-muted);">${outObj.desc}</small></td>
+        <td>${cSal} de ${sub.length} ✓</td>
+        <td>S/ ${tSal.toFixed(2)}</td>
+        <td style="color:#B45309;">S/ ${rSal.toFixed(2)}</td>
+        <td style="color:var(--sky);">S/ ${diffTotalSalida.toFixed(2)}</td>
+        <td>${cSal > 0 ? (ahorroChecks >= 0 ? `<span style="color:var(--emerald);">+S/ ${ahorroChecks.toFixed(2)}</span>` : `<span style="color:var(--rose);">-S/ ${Math.abs(ahorroChecks).toFixed(2)}</span>`) : '—'}</td>
+      </tr>`;
+  }).join("");
+
+  window._cachedOutingsTableHtml = `
+    <table class="m-table">
+      <thead>
+        <tr>
+          <th>Semana o Salida (Toca para abrir)</th>
+          <th>Comprados</th>
+          <th>Planeado</th>
+          <th>Gastado</th>
+          <th>Me queda por gastar</th>
+          <th>Mi Ahorro</th>
+        </tr>
+      </thead>
+      <tbody>${outingsRowsHtml}</tbody>
+    </table>`;
+
+  const totalGastadoConHormiga = totalGastadoProgramado + totalHormigaMes;
+  const saldoNetoLibreMes = metaGlobal - totalGastadoConHormiga;
+  const ahorroGlobalChecks = totalTechoMarcadosMes - totalGastadoProgramado;
+
+  document.getElementById("dashboard-kpi-cards").innerHTML = `
+    <div class="kpi-card">
+      <div class="k-lbl">Presupuesto de mi Mes</div>
+      <div class="k-val">S/ ${metaGlobal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
+      <div class="k-sub">${activeItems.length} productos programados</div>
+    </div>
+    <div class="kpi-card warm">
+      <div class="k-lbl">Lo que voy Gastando</div>
+      <div class="k-val">S/ ${totalGastadoConHormiga.toFixed(2)}</div>
+      <div class="k-sub">Prog: S/ ${totalGastadoProgramado.toFixed(2)} + Hormiga: S/ ${totalHormigaMes.toFixed(2)}</div>
+    </div>
+    <div class="kpi-card ${saldoNetoLibreMes >= 0 ? 'sky' : 'rose'}">
+      <div class="k-lbl">Me queda por Gastar</div>
+      <div class="k-val">S/ ${saldoNetoLibreMes.toFixed(2)}</div>
+      <div class="k-sub">${totalHormigaMes > 0 ? 'Ya deduce S/ ' + totalHormigaMes.toFixed(2) + ' de Hormiga' : 'Dinero disponible del mes'}</div>
+    </div>
+    <div class="kpi-card ${ahorroGlobalChecks >= 0 ? 'emerald' : 'rose'}">
+      <div class="k-lbl">${ahorroGlobalChecks >= 0 ? '¡Mi Ahorro en Compras!' : 'Pasado del Tope'}</div>
+      <div class="k-val">${ahorroGlobalChecks >= 0 ? '+' : '-'}S/ ${Math.abs(ahorroGlobalChecks).toFixed(2)}</div>
+      <div class="k-sub">En mis compras marcadas con ✓</div>
+    </div>`;
+
+  const sumActiveSheets = Object.values(sheetMap).reduce((a, b) => a + b.techoMes, 0);
+  renderInteractiveDonutChart(sheetMap, sumActiveSheets);
+
+  const nonEmptySheets = Object.entries(sheetMap).filter(([_, st]) => st.count > 0 || DEFAULT_CATEGORIES.includes(_));
+  document.getElementById("dash-sheets-grid").innerHTML = nonEmptySheets.map(([shName, st], i) => {
+    const pct = st.techoMes > 0 ? Math.min(100, (st.realMes / st.techoMes) * 100) : 0;
+    const diffSh = st.techoMes - st.realMes;
+    const ahoSh = st.techoMarcados - st.realMes;
+    const metaVis = getCategoryVisualMeta(shName, i);
+    return `
+      <div class="sheet-card" onclick="openSheetFromDashboard('${shName}')">
+        <div class="sh-top">
+          <span>${metaVis.icon} ${shName}</span>
+          <span style="color:#B45309;">S/ ${st.techoMes.toFixed(2)}</span>
+        </div>
+        <div class="sh-amounts">
+          <span>Gastado: S/ ${st.realMes.toFixed(2)}</span>
+          <span style="color:var(--sky);">Queda: S/ ${diffSh.toFixed(2)}</span>
+        </div>
+        <div class="p-bar-bg"><div class="p-bar-fill" style="width:${pct}%;"></div></div>
+        <div style="font-size:0.75rem; font-weight:800; color:${ahoSh>=0?'var(--emerald)':'var(--rose)'};">
+          ${st.count} productos • Ahorro: ${ahoSh>=0?'+':'-'}S/ ${Math.abs(ahoSh).toFixed(2)}
+        </div>
+      </div>`;
+  }).join("");
+}
+
+function openSheetFromDashboard(shName) {
+  document.getElementById("f-hoja").value = shName;
+  onHojaFilterChange();
+  navigateTo("registrar");
+}
+
+function openSpecificOuting(frec, salidaName) {
+  document.getElementById("f-hoja").value = "TODAS";
+  populateRubroDropdown();
+  document.getElementById("f-frec").value = frec;
+  currentSalida = salidaName;
+  navigateTo("registrar");
+}
+
+// =========================================================================================
+// RENDERIZADO DEL MÓDULO DE GASTOS HORMIGA
+// =========================================================================================
+function renderHormigaView() {
+  const metaGlobal = getGlobalMetaBudget();
+  const gastadoProgramado = getMonthScheduledSpentTotal();
+  const listHormiga = getMonthHormigaList();
+  const totalHormiga = getMonthHormigaTotal();
+  const restoAntesDeHormiga = metaGlobal - gastadoProgramado;
+  const saldoNetoFinal = metaGlobal - gastadoProgramado - totalHormiga;
+
+  document.getElementById("hormiga-kpi-cards").innerHTML = `
+    <div class="kpi-card">
+      <div class="k-lbl">Presupuesto Total Mes</div>
+      <div class="k-val">S/ ${metaGlobal.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
+      <div class="k-sub">Resto tras compras ✓: S/ ${restoAntesDeHormiga.toFixed(2)}</div>
+    </div>
+    <div class="kpi-card rose">
+      <div class="k-lbl">Acumulado Gastos Hormiga</div>
+      <div class="k-val">-S/ ${totalHormiga.toFixed(2)}</div>
+      <div class="k-sub">${listHormiga.length} ${listHormiga.length === 1 ? 'gasto registrado' : 'gastos registrados'} en ${currentMonth}</div>
+    </div>
+    <div class="kpi-card ${saldoNetoFinal >= 0 ? 'sky' : 'rose'}">
+      <div class="k-lbl">Saldo Neto Disponible</div>
+      <div class="k-val">S/ ${saldoNetoFinal.toFixed(2)}</div>
+      <div class="k-sub">Deduciendo compras ✓ y Gastos Hormiga</div>
+    </div>`;
+
+  const box = document.getElementById("hormiga-history-table");
+  if (listHormiga.length === 0) {
+    box.innerHTML = `<p style="padding:16px; text-align:center; color:var(--slate-muted);">No tienes gastos hormiga registrados en <b>${currentMonth}</b>. Toca el gran círculo amarillo <b>(+)</b> cuando realices un gasto fuera de lo presupuestado.</p>`;
+    return;
+  }
+
+  const rows = listHormiga.map((h, i) => `
+    <tr>
+      <td><b>#${i + 1}</b></td>
+      <td><b>${h.desc}</b><br/><small style="color:var(--slate-muted);">${h.fecha || currentMonth}</small></td>
+      <td style="color:var(--rose); font-size:0.98rem;"><b>-S/ ${parseFloat(h.monto).toFixed(2)}</b></td>
+      <td style="text-align:right;">
+        <button class="btn-edit-sm" style="color:var(--rose); border-color:#FDA4AF;" onclick="deleteHormigaExpense('${h.id}')">✕ Quitar</button>
+      </td>
+    </tr>
+  `).join("");
+
+  box.innerHTML = `
+    <table class="m-table">
+      <thead>
+        <tr>
+          <th>N°</th>
+          <th>¿En qué se gastó?</th>
+          <th>Monto Deducido</th>
+          <th style="text-align:right;">Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows}
+        <tr style="background:#1E293B; color:#FFFFFF; font-weight:900;">
+          <td colspan="2">TOTAL ACUMULADO GASTOS HORMIGA (${currentMonth.toUpperCase()})</td>
+          <td style="color:#FDA4AF; font-size:1rem;">-S/ ${totalHormiga.toFixed(2)}</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>`;
+}
+
+function openHormigaModal() {
+  toggleSidebar(false, true);
+  document.getElementById("h-desc").value = "";
+  document.getElementById("h-monto").value = "";
+  openModal("modal-hormiga");
+  setTimeout(() => document.getElementById("h-desc").focus(), 100);
+}
+
+function saveHormigaExpense() {
+  const desc = document.getElementById("h-desc").value.trim();
+  const monto = parseFloat(document.getElementById("h-monto").value);
+
+  if (!desc) {
+    alert("Por favor escribe en qué se gastó.");
+    return;
+  }
+  if (isNaN(monto) || monto <= 0) {
+    alert("Por favor ingresa un monto válido mayor a S/ 0.00.");
+    return;
+  }
+
+  const hoy = new Date();
+  const fechaStr = hoy.toLocaleDateString("es-PE", { day: "2-digit", month: "short" });
+
+  hormigaDB.push({
+    id: "HORM-" + Date.now(),
+    mes: currentMonth,
+    desc: desc,
+    monto: monto,
+    fecha: fechaStr
+  });
+
+  saveAppState();
+  closeModal("modal-hormiga");
+  refreshAllViews();
+}
+
+function deleteHormigaExpense(id) {
+  if (!confirm("¿Quitar este gasto hormiga y devolver su monto al presupuesto disponible?")) return;
+  hormigaDB = hormigaDB.filter(h => h.id !== id);
+  saveAppState();
+  refreshAllViews();
+}
+
+function renderRegistrarKPIsAndPills() {
+  const frec = document.getElementById("f-frec").value;
+  const salidas = SALIDAS_MAP[frec] || ["Salida Mensual"];
+  if (!salidas.includes(currentSalida)) currentSalida = salidas[0];
+
+  document.getElementById("registrar-outings-strip").innerHTML = salidas.map(sal => {
+    const sub = getActiveFilteredItems().filter(it => isItemInSalida(it, sal));
+    let cDone = 0;
+    sub.forEach(it => {
+      const lg = logsDB[getLogKey(currentMonth, sal, it.id)];
+      if (lg && lg.checked) cDone++;
+    });
+    return `
+      <button class="outing-pill ${sal===currentSalida?'active':''}" onclick="selectSalida('${sal}')">
+        <span>📅 ${sal}</span>
+        <span class="cnt">${cDone}/${sub.length} ✓</span>
+      </button>`;
+  }).join("");
+
+  const items = getActiveFilteredItems().filter(it => isItemInSalida(it, currentSalida));
+  let sumTechoSalida = 0, sumGastadoChecked = 0, sumTechoChecked = 0, countChecked = 0;
+
+  items.forEach(it => {
+    const effT = getEffectiveTechoSalida(it, currentSalida);
+    sumTechoSalida += effT;
+    const lg = logsDB[getLogKey(currentMonth, currentSalida, it.id)];
+    if (lg && lg.checked) {
+      countChecked++;
+      const rVal = (lg.realPrice !== "" && !isNaN(lg.realPrice)) ? parseFloat(lg.realPrice) : 0;
+      sumGastadoChecked += rVal;
+      sumTechoChecked += effT;
+    }
+  });
+
+  const diffTechoMenosGastado = sumTechoSalida - sumGastadoChecked;
+  const ahorroEnMarcados = sumTechoChecked - sumGastadoChecked;
+
+  let cardsHtml = `
+    <div class="kpi-card">
+      <div class="k-lbl">Planeado para ${currentSalida}</div>
+      <div class="k-val">S/ ${sumTechoSalida.toFixed(2)}</div>
+      <div class="k-sub">${items.length} productos en esta lista</div>
+    </div>
+    <div class="kpi-card warm">
+      <div class="k-lbl">Lo que voy Gastando</div>
+      <div class="k-val">S/ ${sumGastadoChecked.toFixed(2)}</div>
+      <div class="k-sub">${countChecked} de ${items.length} comprados con ✓</div>
+    </div>`;
+
+  if (userConfig.diffMode === "BOTH" || userConfig.diffMode === "TOTAL_DIFF") {
+    cardsHtml += `
+      <div class="kpi-card ${diffTechoMenosGastado >= 0 ? 'sky' : 'rose'}">
+        <div class="k-lbl">Me queda por Gastar</div>
+        <div class="k-val">S/ ${diffTechoMenosGastado.toFixed(2)}</div>
+        <div class="k-sub">S/ ${sumTechoSalida.toFixed(2)} menos S/ ${sumGastadoChecked.toFixed(2)}</div>
+      </div>`;
+  }
+  if (userConfig.diffMode === "BOTH" || userConfig.diffMode === "CHECKED_DIFF") {
+    cardsHtml += `
+      <div class="kpi-card ${ahorroEnMarcados >= 0 ? 'emerald' : 'rose'}">
+        <div class="k-lbl">${ahorroEnMarcados >= 0 ? '¡Mi Ahorro en esta Compra!' : 'Pasado del Tope'}</div>
+        <div class="k-val">${ahorroEnMarcados >= 0 ? '+' : '-'}S/ ${Math.abs(ahorroEnMarcados).toFixed(2)}</div>
+        <div class="k-sub">Tope ✓ (S/ ${sumTechoChecked.toFixed(2)}) menos S/ ${sumGastadoChecked.toFixed(2)}</div>
+      </div>`;
+  }
+
+  document.getElementById("registrar-kpi-cards").innerHTML = cardsHtml;
+}
+
+function renderRegistrarItemsList() {
+  const items = getActiveFilteredItems().filter(it => isItemInSalida(it, currentSalida));
+  const box = document.getElementById("registrar-items-container");
+
+  if (items.length === 0) {
+    box.innerHTML = `
+      <div class="panel-box" style="text-align:center; background:var(--amber-pale); border-color:var(--border-warm);">
+        <h2 style="color:var(--amber-dark); justify-content:center;">No hay productos en esta frecuencia</h2>
+        <p style="color:#92400E; margin-top:6px;">Cambia la opción <b>"3. ¿Cada cuánto se compra?"</b> arriba, o ve a <b>"Planear mis Compras"</b> para agregar productos.</p>
+      </div>`;
+    return;
+  }
+
+  const byRubro = {};
+  items.forEach(it => {
+    if (!byRubro[it.rubro]) byRubro[it.rubro] = [];
+    byRubro[it.rubro].push(it);
+  });
+
+  box.innerHTML = Object.entries(byRubro).map(([rubroName, grp]) => {
+    let rTecho = 0, rReal = 0, rTechoChk = 0, rCntChk = 0;
+    grp.forEach(it => {
+      const effT = getEffectiveTechoSalida(it, currentSalida);
+      rTecho += effT;
+      const lg = logsDB[getLogKey(currentMonth, currentSalida, it.id)];
+      if (lg && lg.checked) {
+        rCntChk++;
+        rTechoChk += effT;
+        if (lg.realPrice !== "" && !isNaN(lg.realPrice)) rReal += parseFloat(lg.realPrice);
+      }
+    });
+    const rAhorroChk = rTechoChk - rReal;
+
+    const cards = grp.map(it => {
+      const effT = getEffectiveTechoSalida(it, currentSalida);
+      const lg = logsDB[getLogKey(currentMonth, currentSalida, it.id)] || { checked: false, realPrice: "" };
+      let pClass = "diff-pill neu", pTxt = "Pendiente";
+      if (lg.checked && lg.realPrice !== "" && !isNaN(lg.realPrice)) {
+        const d = effT - parseFloat(lg.realPrice);
+        if (d >= 0) { pClass = "diff-pill pos"; pTxt = `Ahorré +S/ ${d.toFixed(2)}`; }
+        else { pClass = "diff-pill neg"; pTxt = `Pasé -S/ ${Math.abs(d).toFixed(2)}`; }
+      }
+      return `
+        <div class="item-card ${lg.checked?'checked':''}" id="rcard-${it.id}">
+          <div class="ic-top">
+            <div class="chk-btn ${lg.checked?'checked':''}" id="rchk-${it.id}" onclick="onToggleCheck('${it.id}')">
+              ${lg.checked ? '✓' : ''}
+            </div>
+            <div class="ic-body">
+              <div class="ic-tags">
+                <span class="tag-num">#${it.num}</span>
+                <span class="tag-hoja">${it.lista}</span>
+              </div>
+              <div class="ic-title">${it.nombre}</div>
+              ${it.sug ? `<div class="ic-sug">${it.sug}</div>` : ''}
+            </div>
+            <button class="btn-edit-sm" onclick="openItemModal('${it.id}')">✎ Cambiar</button>
+          </div>
+          <div class="ic-bottom">
+            <div class="ic-specs">
+              <span>📦 ${it.pres}</span>
+              <span>Cant: ${it.cant}</span>
+              <span>Unit: S/ ${it.pUnit.toFixed(2)}</span>
+              <span class="sp-techo">Máximo: S/ ${effT.toFixed(2)}</span>
+            </div>
+            <div class="ic-inputs">
+              <div class="real-box">
+                <span>S/</span>
+                <input type="number" step="0.10" id="rinp-${it.id}" placeholder="Me costó"
+                       value="${lg.realPrice !== '' ? lg.realPrice : ''}"
+                       oninput="onInputRealPrice('${it.id}', this.value)" />
+                <button type="button" class="mini-calc-inline-btn" onclick="openCalculator(null, '${it.nombre.replace(/'/g, '')}', '${it.id}')" title="Calcular este producto">🖩</button>
+              </div>
+              <div class="${pClass}" id="rpill-${it.id}">${pTxt}</div>
+            </div>
+          </div>
+        </div>`;
+    }).join("");
+
+    return `
+      <div class="rubro-block">
+        <div class="rubro-banner">
+          <span>📂 ${rubroName} (${rCntChk}/${grp.length} comprados)</span>
+          <span>Planeado: S/ ${rTecho.toFixed(2)} &nbsp;|&nbsp; Gastado: S/ ${rReal.toFixed(2)} &nbsp;|&nbsp; <b style="color:var(--emerald);">Ahorro: ${rAhorroChk>=0?'+':'-'}S/ ${Math.abs(rAhorroChk).toFixed(2)}</b></span>
+        </div>
+        ${cards}
+      </div>`;
+  }).join("");
+}
+
+function renderSalidasView() {
+  document.getElementById("full-salidas-table").innerHTML = window._cachedOutingsTableHtml || "";
+  const activeItems = itemsDB.filter(x => x.active !== false);
+  const rubrosMap = {};
+
+  activeItems.forEach(it => {
+    const key = `${it.lista} — ${it.rubro}`;
+    if (!rubrosMap[key]) rubrosMap[key] = { count: 0, techoMes: 0, realMes: 0, techoChkMes: 0 };
+    const f = getFactorMes(it.frec);
+    rubrosMap[key].count++;
+    rubrosMap[key].techoMes += it.techo * f;
+
+    const salidas = SALIDAS_MAP[it.frec] || ["Salida Mensual"];
+    const factorOut = it.frec === "Bimestral (Mensualizado)" ? 0.5 : 1;
+    salidas.forEach(sal => {
+      const effT = getEffectiveTechoSalida(it, sal);
+      const lg = logsDB[getLogKey(currentMonth, sal, it.id)];
+      if (lg && lg.checked) {
+        const rVal = (lg.realPrice !== "" && !isNaN(lg.realPrice)) ? parseFloat(lg.realPrice) : 0;
+        rubrosMap[key].realMes += rVal * factorOut;
+        rubrosMap[key].techoChkMes += effT * factorOut;
+      }
+    });
+  });
+
+  const rowsR = Object.entries(rubrosMap).map(([rName, st]) => {
+    const resta = st.techoMes - st.realMes;
+    const aho = st.techoChkMes - st.realMes;
+    return `
+      <tr>
+        <td><b>${rName}</b></td>
+        <td>${st.count}</td>
+        <td>S/ ${st.techoMes.toFixed(2)}</td>
+        <td style="color:#B45309;">S/ ${st.realMes.toFixed(2)}</td>
+        <td style="color:var(--sky);">S/ ${resta.toFixed(2)}</td>
+        <td style="color:${aho>=0?'var(--emerald)':'var(--rose)'};">${aho>=0?'+':'-'}S/ ${Math.abs(aho).toFixed(2)}</td>
+      </tr>`;
+  }).join("");
+
+  document.getElementById("full-rubros-table").innerHTML = `
+    <table class="m-table">
+      <thead>
+        <tr>
+          <th>Categoría y Grupo</th>
+          <th>Productos</th>
+          <th>Planeado Mes</th>
+          <th>Gastado</th>
+          <th>Me queda</th>
+          <th>Mi Ahorro</th>
+        </tr>
+      </thead>
+      <tbody>${rowsR}</tbody>
+    </table>`;
+}
+
+function renderConfigCatalogTable() {
+  if (itemsDB.length === 0) {
+    document.getElementById("config-catalog-table").innerHTML = `<p style="padding:18px; text-align:center; color:var(--slate-muted);">Tu lista está en cero (S/ 0.00). Toca el gran círculo amarillo <b>(+)</b> de arriba para empezar a agregar tus productos o gastos.</p>`;
+    return;
+  }
+  const rows = itemsDB.map(it => {
+    const isAct = (it.active !== false);
+    const f = getFactorMes(it.frec);
+    return `
+      <tr style="${isAct?'':'opacity:0.45;'}">
+        <td>
+          <button class="btn ${isAct?'btn-emerald':'btn-slate'}" style="padding:5px 10px; font-size:0.76rem;" onclick="toggleItemActive('${it.id}')">
+            ${isAct ? '✓ Sí va' : 'No va'}
+          </button>
+        </td>
+        <td><b>${it.lista}</b><br/><small style="color:var(--slate-muted);">${it.rubro}</small></td>
+        <td><b>#${it.num} ${it.nombre}</b><br/><small style="color:var(--slate-muted);">${it.pres}</small></td>
+        <td>${it.frec}</td>
+        <td>S/ ${it.techo.toFixed(2)}</td>
+        <td><b>S/ ${(it.techo * f).toFixed(2)}</b></td>
+        <td><button class="btn-edit-sm" onclick="openItemModal('${it.id}')">✎ Editar</button></td>
+      </tr>`;
+  }).join("");
+
+  document.getElementById("config-catalog-table").innerHTML = `
+    <table class="m-table">
+      <thead>
+        <tr>
+          <th>¿Comprar?</th>
+          <th>Categoría / Grupo</th>
+          <th>Producto o Pago</th>
+          <th>Frecuencia</th>
+          <th>Tope Salida</th>
+          <th>Al Mes</th>
+          <th>Cambiar</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function toggleItemActive(id) {
+  const it = itemsDB.find(x => x.id === id);
+  if (!it) return;
+  it.active = (it.active === false) ? true : false;
+  saveAppState();
+  refreshAllViews();
+}
+
+function renderPrintView() {
+  const hoja = document.getElementById("f-hoja").value;
+  const items = getActiveFilteredItems().filter(it => isItemInSalida(it, currentSalida));
+  const area = document.getElementById("print-sheet-render");
+
+  if (items.length === 0) {
+    area.innerHTML = `<p style="padding:20px; text-align:center;">No hay productos activos en esta salida para imprimir.</p>`;
+    return;
+  }
+
+  let sTecho = 0, sReal = 0, sUnid = 0, sUnit = 0;
+  const trs = items.map(it => {
+    const effT = getEffectiveTechoSalida(it, currentSalida);
+    sTecho += effT; sUnid += it.cant; sUnit += it.pUnit;
+    const lg = logsDB[getLogKey(currentMonth, currentSalida, it.id)] || { checked: false, realPrice: "" };
+    if (lg.checked && lg.realPrice !== "" && !isNaN(lg.realPrice)) sReal += parseFloat(lg.realPrice);
+    const rTxt = (lg.checked && lg.realPrice !== "" && !isNaN(lg.realPrice)) ? `S/ ${parseFloat(lg.realPrice).toFixed(2)}` : `S/ &nbsp;&nbsp;....................`;
+    return `
+      <tr>
+        <td style="text-align:center; font-weight:900;">${lg.checked ? '☑' : '☐'} #${it.num}</td>
+        <td style="font-weight:800;">${it.rubro}</td>
+        <td>
+          <div style="font-weight:900; font-size:0.94rem;">${it.nombre}</div>
+          ${it.sug ? `<div style="font-style:italic; font-size:0.78rem; color:#334155;">${it.sug}</div>` : ''}
+        </td>
+        <td style="font-weight:700;">${it.pres}</td>
+        <td style="text-align:center; font-weight:800; color:#1E40AF;">${it.frec}</td>
+        <td style="text-align:center; font-weight:800;">S/ ${it.pUnit.toFixed(2)}</td>
+        <td style="text-align:center; font-weight:900;">${it.cant}</td>
+        <td class="p-techo">S/ ${effT.toFixed(2)}</td>
+        <td class="p-real"><span class="write-box">${rTxt}</span></td>
+      </tr>`;
+  }).join("");
+
+  area.innerHTML = `
+    <div class="p-banner">
+      <div>
+        <h2 style="font-size:1.15rem; font-weight:900;">LISTA DE COMPRA PARA IMPRIMIR — ${currentSalida.toUpperCase()}</h2>
+        <p style="font-size:0.84rem; color:#E2E8F0; margin-top:3px;">Categoría: ${hoja} &nbsp;|&nbsp; Mes: ${currentMonth} &nbsp;|&nbsp; ${items.length} Productos (${sUnid} Unidades)</p>
+      </div>
+      <div class="p-badge">
+        <div style="font-size:0.7rem; color:#DCFCE7; font-weight:800;">MÁXIMO PLANEADO</div>
+        <div style="font-size:1.3rem; color:#FFFFFF; font-weight:900;">S/ ${sTecho.toFixed(2)}</div>
+      </div>
+    </div>
+    <table class="p-table">
+      <thead>
+        <tr>
+          <th>✓ / N°</th>
+          <th>Grupo / Rubro</th>
+          <th>Producto (con opciones de reemplazo)</th>
+          <th>Presentación</th>
+          <th>Frecuencia</th>
+          <th>Precio Unit.</th>
+          <th>Cant.</th>
+          <th style="background:#166534;">Máximo</th>
+          <th style="background:#B45309;">Me Costó</th>
+        </tr>
+      </thead>
+      <tbody>${trs}</tbody>
+      <tfoot>
+        <tr style="background:#0F172A; color:#FFFFFF; font-weight:900;">
+          <td colspan="5" style="padding:9px;">TOTAL ${currentSalida.toUpperCase()} (ME QUEDA POR GASTAR: S/ ${(sTecho - sReal).toFixed(2)})</td>
+          <td style="text-align:center;">S/ ${sUnit.toFixed(2)}</td>
+          <td style="text-align:center;">${sUnid} unid.</td>
+          <td style="background:#15803D; text-align:center;">S/ ${sTecho.toFixed(2)}</td>
+          <td style="background:#B45309; text-align:center;"><span class="write-box" style="color:#0F172A;">${sReal > 0 ? 'S/ ' + sReal.toFixed(2) : 'S/ &nbsp;&nbsp;....................'}</span></td>
+        </tr>
+      </tfoot>
+    </table>`;
+}
+
+// =========================================================================================
+// MODAL REDISEÑADO DE ADICIONAR / EDITAR PRODUCTO ESTILO APP FINANCIERA (#modal-item)
+// =========================================================================================
+function openModal(id) {
+  const el = document.getElementById(id);
+  const wasOpen = el.classList.contains("open");
+  el.classList.add("open");
+  if (!wasOpen) pushAppHistoryState("modal-" + id);
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove("open");
+}
+
+function autoCalcModalTecho() {
+  const p = parseFloat(document.getElementById("m-punit").value) || 0;
+  const c = parseFloat(document.getElementById("m-cant").value) || 1;
+  document.getElementById("m-techo").value = (p * c).toFixed(2);
+}
+
+function stepModalCant(delta) {
+  const inp = document.getElementById("m-cant");
+  const current = parseInt(inp.value) || 1;
+  const next = Math.max(1, current + delta);
+  inp.value = next;
+  autoCalcModalTecho();
+}
+
+function setModalPres(val) {
+  document.getElementById("m-pres").value = val;
+}
+
+function selectModalFrec(frecValue) {
+  document.getElementById("m-frec").value = frecValue;
+  document.querySelectorAll("#fin-frec-chips-container .fin-frec-chip").forEach(btn => {
+    btn.classList.toggle("active", btn.getAttribute("data-frec") === frecValue);
+  });
+}
+
+function renderModalCategoriesGrid(selectedCat) {
+  const allCats = getAllCategoriesList();
+  const activeCat = (selectedCat && allCats.includes(selectedCat)) ? selectedCat : (allCats[0] || "Canasta Alimentación");
+  document.getElementById("m-lista-select").value = activeCat;
+  document.getElementById("fin-selected-cat-pill").textContent = activeCat;
+
+  const grid = document.getElementById("fin-cat-grid-container");
+  const catButtonsHtml = allCats.map((catName, idx) => {
+    const meta = getCategoryVisualMeta(catName, idx);
+    const isSel = catName === activeCat;
+    return `
+      <div class="fin-cat-item ${isSel ? 'selected' : ''}" onclick="onSelectModalCategory('${catName.replace(/'/g, "\\'")}')">
+        <div class="fin-cat-circle" style="background:${meta.bg};">${meta.icon}</div>
+        <div class="fin-cat-name" title="${catName}">${meta.shortName}</div>
+      </div>
+    `;
+  }).join("");
+
+  const plusButtonHtml = `
+    <div class="fin-cat-item" onclick="toggleNewCategoryCreator()">
+      <div class="fin-cat-circle" style="background:#64748B; font-size:1.85rem; font-weight:800;">+</div>
+      <div class="fin-cat-name">Más</div>
+    </div>
+  `;
+
+  grid.innerHTML = catButtonsHtml + plusButtonHtml;
+  document.getElementById("fin-new-cat-panel").classList.remove("open");
+}
+
+function onSelectModalCategory(catName) {
+  document.getElementById("m-lista-select").value = catName;
+  document.getElementById("fin-selected-cat-pill").textContent = catName;
+  renderModalCategoriesGrid(catName);
+  renderModalRubroChips(catName);
+}
+
+function toggleNewCategoryCreator() {
+  const panel = document.getElementById("fin-new-cat-panel");
+  const isOpen = panel.classList.contains("open");
+  if (!isOpen) {
+    renderEmojiPickerForNewCat();
+    panel.classList.add("open");
+    setTimeout(() => document.getElementById("m-lista-nueva").focus(), 80);
+  } else {
+    panel.classList.remove("open");
+  }
+}
+
+function renderEmojiPickerForNewCat() {
+  const picker = document.getElementById("fin-emoji-picker");
+  picker.innerHTML = CUSTOM_CAT_EMOJIS.map(em => `
+    <button type="button" class="fin-emoji-btn ${em === selectedCustomEmoji ? 'active' : ''}" onclick="selectCustomCatEmoji('${em}')">${em}</button>
+  `).join("");
+}
+
+function selectCustomCatEmoji(em) {
+  selectedCustomEmoji = em;
+  renderEmojiPickerForNewCat();
+}
+
+function confirmAddCustomCategory() {
+  const inp = document.getElementById("m-lista-nueva");
+  const newName = inp.value.trim();
+  if (!newName) {
+    alert("Escribe el nombre de la nueva categoría.");
+    return;
+  }
+  if (!userConfig.customCategories.includes(newName) && !DEFAULT_CATEGORIES.includes(newName)) {
+    userConfig.customCategories.push(newName);
+  }
+  if (!userConfig.customCategoryMeta) userConfig.customCategoryMeta = {};
+  const colorIdx = Object.keys(userConfig.customCategoryMeta).length % CUSTOM_CAT_COLORS.length;
+  userConfig.customCategoryMeta[newName] = {
+    shortName: newName.length > 12 ? newName.slice(0, 11) + "…" : newName,
+    icon: selectedCustomEmoji || "✨",
+    bg: CUSTOM_CAT_COLORS[colorIdx]
+  };
+  saveAppState();
+  inp.value = "";
+  onSelectModalCategory(newName);
+}
+
+function renderModalRubroChips(catName, selectedRubro) {
+  const defaultRubrosByCat = {
+    "Canasta Alimentación": ["1. Carnes y Proteínas", "2. Desayuno, Lácteos y Panadería", "3. Abarrotes, Granos y Aceite", "4. Tubérculos (Papa y Camote)", "5. Verduras Diarias (Mercado)", "6. Condimentos y Aderezos", "7. Frutas (Casa y Lonchera)", "8. Extras y Recreación"],
+    "Útiles de Aseo Personal": ["1. Cuidado Capilar", "2. Higiene Corporal", "3. Higiene Bucal", "5. Papel y Descartables", "6. Cuidado de la Piel", "7. Afeitado e Higiene"],
+    "Vivienda": ["Alquiler / Cuota", "Mantenimiento"],
+    "Servicios": ["Energía Eléctrica", "Gas Natural", "Telecomunicaciones"],
+    "Transporte": ["Movilidad Escolar", "Actividades Extracurriculares"]
+  };
+
+  const fromItems = itemsDB.filter(x => x.lista === catName).map(x => x.rubro);
+  const baseRubros = defaultRubrosByCat[catName] || [];
+  const rubrosList = [...new Set([...baseRubros, ...fromItems])];
+
+  const container = document.getElementById("fin-rubro-chips-container");
+  const newWrap = document.getElementById("fin-new-rubro-wrap");
+  const inpNewRub = document.getElementById("m-rubro-nuevo");
+
+  if (rubrosList.length === 0) {
+    document.getElementById("m-rubro-select").value = "__NEW_RUB__";
+    container.innerHTML = `<button type="button" class="fin-chip add-new-chip active">+ Nuevo grupo</button>`;
+    newWrap.style.display = "block";
+    inpNewRub.value = "";
+    return;
+  }
+
+  const activeRub = (selectedRubro && rubrosList.includes(selectedRubro)) ? selectedRubro : rubrosList[0];
+  document.getElementById("m-rubro-select").value = activeRub;
+  newWrap.style.display = "none";
+  inpNewRub.value = "";
+
+  container.innerHTML = rubrosList.map(r => {
+    const isAct = r === activeRub;
+    return `<button type="button" class="fin-chip ${isAct ? 'active' : ''}" onclick="onSelectModalRubroChip('${r.replace(/'/g, "\\'")}')">${r}</button>`;
+  }).join("") + `<button type="button" class="fin-chip add-new-chip" onclick="onSelectNewRubroChip()">+ Nuevo grupo</button>`;
+}
+
+function onSelectModalRubroChip(rubroName) {
+  const catName = document.getElementById("m-lista-select").value;
+  renderModalRubroChips(catName, rubroName);
+}
+
+function onSelectNewRubroChip() {
+  document.getElementById("m-rubro-select").value = "__NEW_RUB__";
+  document.querySelectorAll("#fin-rubro-chips-container .fin-chip").forEach(c => c.classList.remove("active"));
+  const addChip = document.querySelector("#fin-rubro-chips-container .add-new-chip");
+  if (addChip) addChip.classList.add("active");
+  const newWrap = document.getElementById("fin-new-rubro-wrap");
+  newWrap.style.display = "block";
+  document.getElementById("m-rubro-nuevo").focus();
+}
+
+function openItemModal(editId) {
+  toggleSidebar(false, true);
+  if (editId) {
+    const it = itemsDB.find(x => x.id === editId);
+    if (!it) return;
+    document.getElementById("m-id").value = it.id;
+    document.getElementById("m-num").value = it.num;
+    document.getElementById("m-num-badge").textContent = `#${it.num}`;
+    renderModalCategoriesGrid(it.lista);
+    renderModalRubroChips(it.lista, it.rubro);
+    selectModalFrec(it.frec);
+    document.getElementById("m-nombre").value = it.nombre;
+    document.getElementById("m-sug").value = it.sug;
+    document.getElementById("m-pres").value = it.pres;
+    document.getElementById("m-punit").value = it.pUnit;
+    document.getElementById("m-cant").value = it.cant;
+    document.getElementById("m-techo").value = it.techo;
+    document.getElementById("modal-item-title").textContent = `Editar Producto`;
+    document.getElementById("m-btn-delete").style.display = "inline-flex";
+  } else {
+    const autoNextNum = itemsDB.length + 1;
+    document.getElementById("m-id").value = "";
+    document.getElementById("m-num").value = autoNextNum;
+    document.getElementById("m-num-badge").textContent = `#${autoNextNum}`;
+    const curH = document.getElementById("f-hoja").value;
+    const initCat = (curH && curH !== "TODAS") ? curH : "Canasta Alimentación";
+    renderModalCategoriesGrid(initCat);
+    renderModalRubroChips(initCat);
+    selectModalFrec("Semanal");
+    document.getElementById("m-nombre").value = "";
+    document.getElementById("m-sug").value = "";
+    document.getElementById("m-pres").value = "Unidad";
+    document.getElementById("m-punit").value = "";
+    document.getElementById("m-cant").value = 1;
+    document.getElementById("m-techo").value = "";
+    document.getElementById("modal-item-title").textContent = "Añadir Producto o Gasto";
+    document.getElementById("m-btn-delete").style.display = "none";
+  }
+  openModal("modal-item");
+}
+
+function saveModalItem() {
+  const id = document.getElementById("m-id").value;
+  let lista = document.getElementById("m-lista-select").value.trim();
+
+  if (!lista) { alert("Por favor selecciona una categoría."); return; }
+  if (!userConfig.customCategories.includes(lista) && !DEFAULT_CATEGORIES.includes(lista)) {
+    userConfig.customCategories.push(lista);
+  }
+
+  const selRubVal = document.getElementById("m-rubro-select").value;
+  let rubro = selRubVal === "__NEW_RUB__"
+    ? document.getElementById("m-rubro-nuevo").value.trim()
+    : selRubVal;
+  if (!rubro) rubro = "General";
+
+  const num = parseInt(document.getElementById("m-num").value) || (itemsDB.length + 1);
+  const frec = document.getElementById("m-frec").value || "Semanal";
+  const nombre = document.getElementById("m-nombre").value.trim();
+  const sug = document.getElementById("m-sug").value.trim();
+  const pres = document.getElementById("m-pres").value.trim() || "Unidad";
+  const pUnit = parseFloat(document.getElementById("m-punit").value) || 0;
+  const cant = parseInt(document.getElementById("m-cant").value) || 1;
+  const techo = parseFloat(document.getElementById("m-techo").value) || (pUnit * cant);
+
+  if (!nombre) { alert("Por favor escribe el nombre del producto o pago."); return; }
+
+  if (id) {
+    const idx = itemsDB.findIndex(x => x.id === id);
+    if (idx > -1) itemsDB[idx] = { ...itemsDB[idx], lista, rubro, num, frec, nombre, sug, pres, pUnit, cant, techo };
+  } else {
+    itemsDB.push({ id: "ITM-" + Date.now(), lista, rubro, num, frec, nombre, sug, pres, pUnit, cant, techo, active: true });
+  }
+  saveAppState();
+  closeModal("modal-item");
+  refreshAllViews();
+}
+
+function deleteModalItem() {
+  const id = document.getElementById("m-id").value;
+  if (!id || !confirm("¿Borrar este producto de tu lista?")) return;
+  itemsDB = itemsDB.filter(x => x.id !== id);
+  saveAppState();
+  closeModal("modal-item");
+  refreshAllViews();
+}
+
+function openKpiModal() {
+  toggleSidebar(false, true);
+  document.getElementById("kpi-meta-mode").value = userConfig.metaMode || "AUTO";
+  document.getElementById("kpi-custom-val").value = userConfig.customMetaVal || 3809.05;
+  document.getElementById("kpi-diff-mode").value = userConfig.diffMode || "BOTH";
+  document.getElementById("kpi-check-behavior").value = userConfig.checkBehavior || "AUTOFILL_TECHO";
+  toggleCustomMetaInput();
+  openModal("modal-kpi");
+}
+
+function toggleCustomMetaInput() {
+  const mode = document.getElementById("kpi-meta-mode").value;
+  document.getElementById("custom-meta-wrap").style.display = (mode === "CUSTOM") ? "block" : "none";
+}
+
+function saveKpiSettings() {
+  userConfig.metaMode = document.getElementById("kpi-meta-mode").value;
+  userConfig.customMetaVal = parseFloat(document.getElementById("kpi-custom-val").value) || 0;
+  userConfig.diffMode = document.getElementById("kpi-diff-mode").value;
+  userConfig.checkBehavior = document.getElementById("kpi-check-behavior").value;
+  saveAppState();
+  closeModal("modal-kpi");
+  refreshAllViews();
+}
+
+function openZeroModal() {
+  toggleSidebar(false, true);
+  openModal("modal-zero");
+}
+
+function executeZeroReset(mode) {
+  if (mode === "EMPTY_ALL") {
+    if (!confirm("¿Seguro que deseas borrar todos los productos y gastos hormiga y empezar en S/ 0.00?")) return;
+    itemsDB = [];
+    logsDB = {};
+    hormigaDB = [];
+    userConfig.metaMode = "AUTO";
+  } else if (mode === "ZERO_PRICES") {
+    if (!confirm("¿Poner todos los precios en S/ 0.00 conservando los nombres?")) return;
+    itemsDB = itemsDB.map(it => ({ ...it, pUnit: 0, techo: 0 }));
+    logsDB = {};
+    hormigaDB = [];
+    userConfig.metaMode = "AUTO";
+  } else if (mode === "CLEAR_LOGS_ONLY") {
+    Object.keys(logsDB).forEach(k => { if (k.startsWith(currentMonth + "|")) delete logsDB[k]; });
+    hormigaDB = hormigaDB.filter(h => h.mes !== currentMonth);
+  }
+  saveAppState();
+  closeModal("modal-zero");
+  refreshAllViews();
+}
+
+function restoreExcel67Items() {
+  toggleSidebar(false, true);
+  if (!confirm("¿Restaurar los 67 productos y pagos originales de tu Excel (S/ 3,809.05)?")) return;
+  itemsDB = JSON.parse(JSON.stringify(EXCEL_67_ITEMS));
+  userConfig.metaMode = "AUTO";
+  saveAppState();
+  refreshAllViews();
+}
+
+function exportBackupJSON() {
+  toggleSidebar(false, true);
+  const data = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ profile: currentProfile, itemsDB, logsDB, hormigaDB, userConfig }, null, 2));
+  const a = document.createElement("a");
+  a.href = data; a.download = `Copia_Mi_Hogar_${currentProfile}.json`; a.click();
+}
+
+function importBackupJSON(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = function(ev) {
+    try {
+      const p = JSON.parse(ev.target.result);
+      if (p.itemsDB) itemsDB = p.itemsDB;
+      if (p.logsDB) logsDB = p.logsDB;
+      if (p.hormigaDB) hormigaDB = p.hormigaDB;
+      if (p.userConfig) userConfig = p.userConfig;
+      saveAppState(); refreshAllViews();
+      toggleSidebar(false, true);
+      alert("Copia cargada con éxito.");
+    } catch(err) { alert("Archivo inválido."); }
+  };
+  r.readAsText(f);
+}
+
+function exportCurrentViewCSV() {
+  const items = getActiveFilteredItems().filter(it => isItemInSalida(it, currentSalida));
+  let csv = "\uFEFFCategoria,Grupo,N°,Producto,Opciones,Presentacion,Frecuencia,Salida,Precio Unitario,Cantidad,Maximo Planeado,Comprado,Me Costo,Ahorro\n";
+  items.forEach(it => {
+    const effT = getEffectiveTechoSalida(it, currentSalida);
+    const lg = logsDB[getLogKey(currentMonth, currentSalida, it.id)] || { checked: false, realPrice: "" };
+    const r = (lg.checked && lg.realPrice !== "") ? parseFloat(lg.realPrice) : "";
+    const diff = r !== "" ? (effT - r).toFixed(2) : "";
+    csv += `"${it.lista}","${it.rubro}",${it.num},"${it.nombre}","${it.sug}","${it.pres}","${it.frec}","${currentSalida}",${it.pUnit},${it.cant},${effT},"${lg.checked?'SI':'NO'}",${r},${diff}\n`;
+  });
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `Lista_${currentSalida}_${currentMonth}.csv`;
+  a.click();
+}
+
+window.onload = function() {
+  loadAppState();
+  populateFilterDropdowns();
+  refreshAllViews();
+  try {
+    window.history.replaceState({ verticeApp: true, layer: "home" }, "");
+  } catch (e) {}
+};
+// =========================================================================================
+// INSTALACIÓN PWA EN EL EQUIPO EN USO Y COMPARTIR INSTALADOR POR WHATSAPP / ENLACE
+// =========================================================================================
+let deferredPwaPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPwaPrompt = e;
+  const statusLbl = document.getElementById('pwa-install-status-lbl');
+  const btnTxt = document.getElementById('btn-pwa-install-txt');
+  if (statusLbl) statusLbl.textContent = '¡Listo para instalar con 1 toque!';
+  if (btnTxt) btnTxt.textContent = 'Instalar Ahora en este Equipo';
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredPwaPrompt = null;
+  const statusLbl = document.getElementById('pwa-install-status-lbl');
+  const btnTxt = document.getElementById('btn-pwa-install-txt');
+  if (statusLbl) statusLbl.textContent = '✓ App instalada en este equipo';
+  if (btnTxt) btnTxt.textContent = 'App ya Instalada (Ver guía)';
+});
+
+function getCleanInstallUrl() {
+  const url = new URL(window.location.href);
+  url.hash = '';
+  return url.toString();
+}
+
+async function installAppOnDevice() {
+  if (deferredPwaPrompt) {
+    deferredPwaPrompt.prompt();
+    const { outcome } = await deferredPwaPrompt.userChoice;
+    if (outcome === 'accepted') {
+      deferredPwaPrompt = null;
+    }
+    return;
+  }
+  toggleSidebar(false, true);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  const msgEl = document.getElementById('install-guide-status-msg');
+  if (msgEl) {
+    msgEl.textContent = isStandalone
+      ? '✅ Ya estás usando la aplicación instalada en tu equipo. Si deseas instalarla en otro dispositivo, sigue estos pasos o comparte el enlace:'
+      : 'Para dejar el instalador directo en la pantalla de tu celular o computadora, realiza este paso rápido:';
+  }
+  openModal('modal-install-guide');
+}
+
+function shareInstallerWhatsApp() {
+  const installUrl = getCleanInstallUrl();
+  const msg = `📲 *INSTALADOR APP: COMPRAS Y HOGAR (VÉRTICE)*
+` +
+              `━━━━━━━━━━━━━━━━━━━━
+` +
+              `Hola, te comparto el enlace directo para instalar la aplicación *Compras y Hogar v7.0* en tu celular o computadora:
+
+` +
+              `👉 ${installUrl}
+
+` +
+              `*¿Cómo instalarla al abrir el enlace?*
+` +
+              `• *En Android/PC:* Abre el menú lateral izquierdo (*MENÚ* ❯ *4. Instalar y Compartir App*) y toca *"Instalar en este Equipo"*.
+` +
+              `• *En iPhone (Safari):* Toca el botón *Compartir* (⬆️) y elige *"Agregar a inicio"*.
+` +
+              `━━━━━━━━━━━━━━━━━━━━
+` +
+              `_Diseñado por Vértice • RCB_`;
+  window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank");
+}
+
+async function shareOrCopyInstallLink() {
+  const installUrl = getCleanInstallUrl();
+  const shareData = {
+    title: 'Compras y Hogar v7.0 — Vértice',
+    text: 'Abre este enlace para usar e instalar la app Compras y Hogar (Vértice • RCB) en tu celular o equipo:',
+    url: installUrl
+  };
+
+  if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+    try {
+      await navigator.share(shareData);
+      return;
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(installUrl);
+    const btnTxt = document.getElementById('btn-copy-link-txt');
+    if (btnTxt) {
+      const prev = btnTxt.textContent;
+      btnTxt.textContent = '✓ ¡Enlace Copiado!';
+      setTimeout(() => { btnTxt.textContent = prev; }, 2500);
+    }
+    alert("¡Enlace de instalación copiado al portapapeles!
+
+" + installUrl + "
+
+Ya puedes pegarlo y enviarlo para que otra persona lo instale.");
+  } catch (e) {
+    prompt("Copia este enlace para compartir el instalador de la aplicación:", installUrl);
+  }
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
